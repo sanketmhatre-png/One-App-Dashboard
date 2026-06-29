@@ -40,6 +40,9 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 .ct{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .ct .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .hb{margin-bottom:9px}
+.hb.clickable{cursor:pointer;padding:4px;border-radius:6px;transition:background 0.15s}
+.hb.clickable:hover{background:var(--sf2)}
+.hb.active-filter{background:var(--ag);border:1px dashed var(--ac)}
 .hb .hl{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px}
 .hb .hl span:first-child{color:var(--tx);font-weight:500}
 .hb .hl span:last-child{color:var(--tm)}
@@ -51,9 +54,11 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 .vv{font-size:10px;font-weight:600;margin-bottom:2px;text-align:center}
 .vl{font-size:9px;color:var(--tm);margin-top:4px;text-align:center}
 .pill{display:inline-block;padding:4px 10px;border-radius:14px;font-size:10px;font-weight:600}
-.pill.g{background:var(--gd);color:var(--gn)}.pill.r{background:var(--rdd);color:var(--rd)}.pill.b{background:var(--bld);color:var(--bl)}.pill.y{background:var(--ag);color:var(--ac)}.pill.p{background:var(--prd);color:var(--pr)}.pill.pk覆{background:var(--pkd);color:var(--pk)}.pill.cy{background:var(--cyd);color:var(--cy)}
+.pill.g{background:var(--gd);color:var(--gn)}.pill.r{background:var(--rdd);color:var(--rd)}.pill.b{background:var(--bld);color:var(--bl)}.pill.y{background:var(--ag);color:var(--ac)}.pill.p{background:var(--prd);color:var(--pr)}.pill.pk{background:var(--pkd);color:var(--pk)}.pill.cy{background:var(--cyd);color:var(--cy)}
 .mt{width:100%;font-size:10px;border-collapse:collapse}
 .mt th{text-align:left;color:var(--tm);font-weight:500;padding:6px 7px;border-bottom:1px solid var(--bd);font-size:9px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;background:var(--sf)}
+.mt th.sortable{cursor:pointer;user-select:none;transition:color 0.15s, background-color 0.15s}
+.mt th.sortable:hover{color:var(--ac);background:var(--sf2)}
 .mt td{padding:6px 7px;border-bottom:1px solid var(--bd)}
 .mt tr:last-child td{border-bottom:none}
 .mt tr:hover td{background:var(--sf2)}
@@ -153,13 +158,27 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 <div class="pn" id="t4">
   <div class="kr" id="agingKpis"></div>
   <div class="g2">
-    <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Projects per Stage</div><div id="stageBars"></div></div>
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Projects per Stage (Click bar to cross-filter)</div><div id="stageBars"></div></div>
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--rd)"></div>Aging Distribution</div><div id="agingDistBars"></div></div>
   </div>
   <div class="cd">
     <div class="ct"><div class="dot" style="background:var(--ac)"></div>Project Stage & Aging — All Projects</div>
     <div class="filter-row" id="stageFilterRow"></div>
-    <div class="scr" style="max-height:600px"><table class="mt"><thead><tr><th>Project</th><th>City</th><th>Current Stage</th><th>Stage Since</th><th>Days in Stage</th><th>kWp</th></tr></thead><tbody id="agingTable"></tbody></table></div>
+    <div class="scr" style="max-height:600px">
+      <table class="mt" id="agingMasterTable">
+        <thead>
+          <tr>
+            <th class="sortable" onclick="sortAgingTable('name')">Project <span id="sort_name"></span></th>
+            <th class="sortable" onclick="sortAgingTable('city')">City <span id="sort_city"></span></th>
+            <th class="sortable" onclick="sortAgingTable('stage')">Current Stage <span id="sort_stage"></span></th>
+            <th class="sortable" onclick="sortAgingTable('stageDate')">Stage Since <span id="sort_stageDate"></span></th>
+            <th class="sortable" onclick="sortAgingTable('days')">Days in Stage <span id="sort_days"></span></th>
+            <th class="sortable" onclick="sortAgingTable('cap')">kWp <span id="sort_cap"></span></th>
+          </tr>
+        </thead>
+        <tbody id="agingTable"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -189,6 +208,29 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 const SHEET_ID = '1mqFfGB8ZzEAitV48Asl_CAEdjpUViKr62s2rObCG30E';
 const SHEETS = ['DEV Request', 'DEV Task', '3D Process', 'HOTO 1', 'HOTO 2', 'Approval'];
 let DATA = {};
+
+// Global configurations for cross-filtering and sorting engine 
+let currentAgingFilter = 'all';
+let currentStageCrossFilter = null;
+let currentSortKey = 'days';
+let currentSortAsc = false;
+
+// Global explicit stage design color configuration map matrix
+const stageColorMap = {
+  '1 HOTO 1 Stage': 'var(--ac)',
+  '2 DEV Stage': 'var(--bl)',
+  '2.5 DEV Approve Stage': 'var(--pr)',
+  '2.7 3D Design Stage': 'var(--cy)',
+  '3 QHSE Stage': 'var(--gn)',
+  '4 TSM Layout Stage': 'var(--pk)',
+  '4.5 TSM Stage': 'var(--rd)',
+  '5 Design Stage': 'var(--ac)',
+  '6 Finance Approval': 'var(--bl)',
+  '7 Anshuman Approval': 'var(--pr)',
+  '8 CX Approval': 'var(--cy)',
+  '9 HOTO 2 Stage': 'var(--gn)',
+  '✓ HOTO 2 Completed': 'var(--gn)'
+};
 
 function T(n){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.getElementById('t'+n).classList.add('on');document.querySelectorAll('.tab')[n].classList.add('on')}
 
@@ -251,6 +293,10 @@ function barHTML(label, val, total, color) {
 function sbarHTML(label, valStr, pctVal, color) {
   return `<div class="hb"><div class="hl"><span>${label}</span><span>${valStr}</span></div><div class="ht"><div class="hf" style="width:${pctVal}%;background:${color}"></div></div></div>`;
 }
+function clickableStageBarHTML(id, label, valStr, pctVal, color) {
+  const activeClass = currentStageCrossFilter === id ? ' active-filter' : '';
+  return `<div class="hb clickable${activeClass}" onclick="toggleStageCrossFilter('${id}')"><div class="hl"><span>${label}</span><span>${valStr}</span></div><div class="ht"><div class="hf" style="width:${pctVal}%;background:${color}"></div></div></div>`;
+}
 
 function renderDashboard() {
   const devReq = DATA['DEV Request'] || [];
@@ -258,7 +304,6 @@ function renderDashboard() {
   const d3 = DATA['3D Process'] || [];
   const hoto1 = DATA['HOTO 1'] || [];
   const hoto2 = DATA['HOTO 2'] || [];
-  const approval = DATA['Approval'] || [];
 
   const totalProjects = hoto1.length;
   const devReqCount = devReq.length;
@@ -490,7 +535,6 @@ function daysBetween(d) {
   return Math.floor((new Date() - d) / 86400000);
 }
 
-// === STAGE CALCULATION (Using HOTO 1 as Master Framework) ===
 function calculateProjectStages() {
   const hoto1 = DATA['HOTO 1'] || [];
   const devTask = DATA['DEV Task'] || [];
@@ -498,7 +542,6 @@ function calculateProjectStages() {
   const approval = DATA['Approval'] || [];
   const hoto2 = DATA['HOTO 2'] || [];
 
-  // Strictly maps everything relative to unique projects configured inside HOTO 1 
   const projNames = [...new Set(hoto1.map(r => g(r,'Project name')).filter(Boolean))];
   const results = [];
 
@@ -579,7 +622,7 @@ function calculateProjectStages() {
     });
   });
 
-  return results.sort((a,b) => (b.days||0) - (a.days||0));
+  return results;
 }
 
 // ===== RENDER AGING TAB =====
@@ -600,17 +643,7 @@ function renderAging() {
     kpiHTML('var(--rd)','Avg Days in Stage',Math.round(avgDays),'Active projects') +
     kpiHTML('var(--pk)','Over 30 Days',over30,`${pct(over30,inProgress)}% of active`);
 
-  const stageGroups = {};
-  projects.forEach(p => { stageGroups[p.stage] = (stageGroups[p.stage]||0)+1; });
-  const stageEntries = Object.entries(stageGroups).sort((a,b)=> {
-    const na = parseFloat(a[0]) || 99, nb = parseFloat(b[0]) || 99;
-    return na - nb;
-  });
-  const stMax = Math.max(...stageEntries.map(s=>s[1]),1);
-  const stColors = ['var(--ac)','var(--bl)','var(--pr)','var(--cy)','var(--gn)','var(--pk)','var(--rd)'];
-  document.getElementById('stageBars').innerHTML = stageEntries.map((s,i) =>
-    sbarHTML(s[0], s[1], pct(s[1],stMax), stColors[i%stColors.length])
-  ).join('');
+  renderStageBarsHTML(projects);
 
   const aging = [{l:'0–7 days',c:0},{l:'8–15 days',c:0},{l:'16–30 days',c:0},{l:'31–60 days',c:0},{l:'60+ days',c:0}];
   projects.filter(p=>!p.completed&&p.days!=null).forEach(p=>{
@@ -627,12 +660,135 @@ function renderAging() {
   ).join('');
 
   document.getElementById('stageFilterRow').innerHTML =
-    `<div class="fbtn on" onclick="filterAging('all',this)">All (${total})</div>` +
-    `<div class="fbtn" onclick="filterAging('active',this)">Active Only</div>` +
-    `<div class="fbtn" onclick="filterAging('over30',this)">Over 30 Days</div>` +
-    `<div class="fbtn" onclick="filterAging('completed',this)">Completed</div>`;
+    `<div class="fbtn ${currentAgingFilter==='all' && !currentStageCrossFilter?'on':''}" onclick="setAgingBadgeFilter('all',this)">All (${total})</div>` +
+    `<div class="fbtn ${currentAgingFilter==='active'?'on':''}" onclick="setAgingBadgeFilter('active',this)">Active Only</div>` +
+    `<div class="fbtn ${currentAgingFilter==='over30'?'on':''}" onclick="setAgingBadgeFilter('over30',this)">Over 30 Days</div>` +
+    `<div class="fbtn ${currentAgingFilter==='completed'?'on':''}" onclick="setAgingBadgeFilter('completed',this)">Completed</div>`;
 
-  filterAging('all', document.querySelector('#stageFilterRow .fbtn'));
+  buildAndRenderAgingTable();
+}
+
+function renderStageBarsHTML(projects) {
+  const stageGroups = {};
+  projects.forEach(p => { stageGroups[p.stage] = (stageGroups[p.stage]||0)+1; });
+  
+  // Re-map fixed structural keys array manually to keep execution color assignments in sequence
+  const pipelineOrder = [
+    '1 HOTO 1 Stage', '2 DEV Stage', '2.5 DEV Approve Stage', '2.7 3D Design Stage',
+    '3 QHSE Stage', '4 TSM Layout Stage', '4.5 TSM Stage', '5 Design Stage',
+    '6 Finance Approval', '7 Anshuman Approval', '8 CX Approval', '9 HOTO 2 Stage', '✓ HOTO 2 Completed'
+  ];
+
+  const stageEntries = [];
+  pipelineOrder.forEach(stg => {
+    if(stageGroups[stg]) stageEntries.push([stg, stageGroups[stg]]);
+  });
+  
+  // Append missing untracked stages dynamically if found
+  Object.keys(stageGroups).forEach(stg => {
+    if(!pipelineOrder.includes(stg)) stageEntries.push([stg, stageGroups[stg]]);
+  });
+
+  const stMax = Math.max(...stageEntries.map(s=>s[1]),1);
+  
+  document.getElementById('stageBars').innerHTML = stageEntries.map(([stageKey, value]) => {
+    const matchedColor = stageColorMap[stageKey] || 'var(--tm)';
+    return clickableStageBarHTML(stageKey, stageKey, value, pct(value,stMax), matchedColor);
+  }).join('');
+}
+
+function toggleStageCrossFilter(stageId) {
+  if (currentStageCrossFilter === stageId) {
+    currentStageCrossFilter = null;
+  } else {
+    currentStageCrossFilter = stageId;
+    currentAgingFilter = 'all'; 
+  }
+  
+  const projects = window._agingData || [];
+  renderStageBarsHTML(projects);
+  
+  document.querySelectorAll('#stageFilterRow .fbtn').forEach(b=>b.classList.remove('on'));
+  if(!currentStageCrossFilter) {
+    document.querySelector('#stageFilterRow .fbtn').classList.add('on');
+  }
+  
+  buildAndRenderAgingTable();
+}
+
+function setAgingBadgeFilter(filterType, element) {
+  currentStageCrossFilter = null; 
+  currentAgingFilter = filterType;
+  
+  const projects = window._agingData || [];
+  renderStageBarsHTML(projects);
+  
+  document.querySelectorAll('#stageFilterRow .fbtn').forEach(b=>b.classList.remove('on'));
+  element.classList.add('on');
+  
+  buildAndRenderAgingTable();
+}
+
+function sortAgingTable(key) {
+  if (currentSortKey === key) {
+    currentSortAsc = !currentSortAsc;
+  } else {
+    currentSortKey = key;
+    currentSortAsc = true;
+  }
+  buildAndRenderAgingTable();
+}
+
+function buildAndRenderAgingTable() {
+  const tb = document.getElementById('agingTable');
+  let data = window._agingData || [];
+
+  if (currentStageCrossFilter) {
+    data = data.filter(p => p.stage === currentStageCrossFilter);
+  } else {
+    if(currentAgingFilter==='active') data = data.filter(p=>!p.completed);
+    else if(currentAgingFilter==='over30') data = data.filter(p=>p.days>30&&!p.completed);
+    else if(currentAgingFilter==='completed') data = data.filter(p=>p.completed);
+  }
+
+  data.sort((a, b) => {
+    let va = a[currentSortKey];
+    let vb = b[currentSortKey];
+
+    if (va === null || va === undefined) return currentSortAsc ? 1 : -1;
+    if (vb === null || vb === undefined) return currentSortAsc ? -1 : 1;
+
+    if (typeof va === 'string') {
+      return currentSortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    }
+    
+    return currentSortAsc ? va - vb : vb - va;
+  });
+
+  const columns = ['name', 'city', 'stage', 'stageDate', 'days', 'cap'];
+  columns.forEach(col => {
+    const indicator = document.getElementById('sort_' + col);
+    if(indicator) {
+      if (currentSortKey === col) {
+        indicator.textContent = currentSortAsc ? ' ▲' : ' ▼';
+        indicator.style.color = 'var(--ac)';
+      } else {
+        indicator.textContent = '';
+      }
+    }
+  });
+
+  tb.innerHTML = data.map(p => {
+    const textRenderColor = stageColorMap[p.stage] || 'var(--tx)';
+    return `<tr>
+      <td style="font-weight:500">${p.name}</td>
+      <td>${p.city||'—'}</td>
+      <td><span style="font-size:10px;font-weight:600;color:${textRenderColor}">${p.stage}</span></td>
+      <td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td>
+      <td>${agingBadge(p.days,p.completed)}</td>
+      <td>${p.cap||'—'}</td>
+    </tr>`;
+  }).join('');
 }
 
 function agingBadge(days, completed) {
@@ -643,20 +799,6 @@ function agingBadge(days, completed) {
   if(days<=30) return `<span class="pill y">${days}d</span>`;
   if(days<=60) return `<span class="pill" style="background:var(--pkd);color:var(--pk)">${days}d</span>`;
   return `<span class="pill r">${days}d</span>`;
-}
-
-function filterAging(filter, el) {
-  document.querySelectorAll('#stageFilterRow .fbtn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on');
-  const tb = document.getElementById('agingTable');
-  let data = window._agingData || [];
-  if(filter==='active') data = data.filter(p=>!p.completed);
-  else if(filter==='over30') data = data.filter(p=>p.days>30&&!p.completed);
-  else if(filter==='completed') data = data.filter(p=>p.completed);
-
-  tb.innerHTML = data.map(p =>
-    `<tr><td style="font-weight:500">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${p.completed?'var(--gn)':'var(--ac)'}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td><td>${p.cap||'—'}</td></tr>`
-  ).join('');
 }
 
 fetchAll();
