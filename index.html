@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SolarSquare — OTA Live Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0f14;--sf:#151921;--sf2:#1c2230;--bd:#252d3d;--tx:#e4e8f1;--tm:#8892a6;--ac:#f59e0b;--ag:rgba(245,158,11,.15);--gn:#22c55e;--gd:rgba(34,197,94,.15);--rd:#ef4444;--rdd:rgba(239,68,68,.15);--bl:#3b82f6;--bld:rgba(59,130,246,.15);--pr:#a855f7;--prd:rgba(168,85,247,.15);--cy:#06b6d4;--cyd:rgba(6,182,212,.15);--pk:#ec4899;--pkd:rgba(236,72,153,.12);--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
+.d{max-width:1360px;margin:0 auto;padding:18px 18px 50px}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--bd);flex-wrap:wrap;gap:8px}
+.hdr h1{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;letter-spacing:-.5px}
+.hdr h1 b{color:var(--ac)}
+.hdr .sub{color:var(--tm);font-size:11px}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.lv{background:var(--gd);color:var(--gn);font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px}
+.lv.loading{background:var(--ag);color:var(--ac);animation:pulse 1.5s infinite}
+.lv.err{background:var(--rdd);color:var(--rd)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.rbtn{background:var(--sf2);border:1px solid var(--bd);color:var(--tm);font-size:10px;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:Inter;font-weight:600;transition:.2s}
+.rbtn:hover{border-color:var(--ac);color:var(--ac)}
+.tabs{display:flex;gap:4px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.tab{padding:7px 16px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--sf);color:var(--tm);white-space:nowrap;transition:.2s}
+.tab:hover{border-color:var(--ac);color:var(--tx)}
+.tab.on{background:var(--ag);border-color:var(--ac);color:var(--ac)}
+.pn{display:none}.pn.on{display:block}
+.kr{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:18px}
+.k{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;position:relative;overflow:hidden}
+.k .tp{position:absolute;top:0;left:0;right:0;height:3px}
+.k .l{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--tm);font-weight:600}
+.k .v{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;margin:5px 0 2px}
+.k .dt{font-size:10px;color:var(--tm)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+.cd{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.ct{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.ct .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.hb{margin-bottom:9px}
+.hb .hl{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px}
+.hb .hl span:first-child{color:var(--tx);font-weight:500}
+.hb .hl span:last-child{color:var(--tm)}
+.hb .ht{background:var(--sf2);height:6px;border-radius:3px;overflow:hidden}
+.hb .hf{height:100%;border-radius:3px}
+.vc{display:flex;align-items:flex-end;gap:8px;height:130px;padding-top:6px}
+.vw{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.vb{width:100%;border-radius:4px 4px 0 0;min-height:3px}
+.vv{font-size:10px;font-weight:600;margin-bottom:2px;text-align:center}
+.vl{font-size:9px;color:var(--tm);margin-top:4px;text-align:center}
+.pill{display:inline-block;padding:4px 10px;border-radius:14px;font-size:10px;font-weight:600}
+.pill.g{background:var(--gd);color:var(--gn)}.pill.r{background:var(--rdd);color:var(--rd)}.pill.b{background:var(--bld);color:var(--bl)}.pill.y{background:var(--ag);color:var(--ac)}.pill.p{background:var(--prd);color:var(--pr)}.pill.pk覆{background:var(--pkd);color:var(--pk)}.pill.cy{background:var(--cyd);color:var(--cy)}
+.mt{width:100%;font-size:10px;border-collapse:collapse}
+.mt th{text-align:left;color:var(--tm);font-weight:500;padding:6px 7px;border-bottom:1px solid var(--bd);font-size:9px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;background:var(--sf)}
+.mt td{padding:6px 7px;border-bottom:1px solid var(--bd)}
+.mt tr:last-child td{border-bottom:none}
+.mt tr:hover td{background:var(--sf2)}
+.pipe{display:flex;gap:3px;margin-bottom:12px}
+.ps{flex:1;text-align:center;padding:11px 5px;border-radius:8px}
+.ps .pv{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700}
+.ps .pl{font-size:8px;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;font-weight:600}
+.sb{background:var(--sf2);padding:11px;border-radius:8px;text-align:center}
+.sb .sl{font-size:10px;font-weight:600;margin-bottom:1px}
+.sb .sv{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700}
+.sb .sd{font-size:9px;color:var(--tm);margin-top:1px}
+.scr{overflow-x:auto;max-height:500px;overflow-y:auto}
+.fnl-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.fnl-lbl{width:120px;font-size:11px;font-weight:500;text-align:right;flex-shrink:0}
+.fnl-bar{height:28px;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:11px;font-weight:600;transition:width 1s}
+.fnl-pct{width:50px;font-size:11px;color:var(--tm);text-align:right;flex-shrink:0}
+.filter-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.fbtn{padding:5px 12px;border-radius:14px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--bd);background:var(--sf);color:var(--tm);transition:.15s}
+.fbtn:hover,.fbtn.on{background:var(--ag);border-color:var(--ac);color:var(--ac)}
+.sdot{display:inline-block;width:18px;height:18px;border-radius:50%;text-align:center;line-height:18px;font-size:9px;font-weight:700}
+.sdot.yes{background:var(--gd);color:var(--gn)}.sdot.no{background:var(--sf2);color:var(--tm)}.sdot.sched{background:var(--ag);color:var(--ac)}
+.loading-overlay{text-align:center;padding:80px 20px;color:var(--tm);font-size:14px}
+.loading-overlay .spinner{width:36px;height:36px;border:3px solid var(--bd);border-top-color:var(--ac);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.share-note{background:var(--ag);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:11px;color:var(--ac);line-height:1.6;display:none}
+.share-note b{color:var(--tx)}
+@media(max-width:768px){.g2,.g3,.g21{grid-template-columns:1fr}.pipe{flex-wrap:wrap}.ps{min-width:65px}.kr{grid-template-columns:repeat(2,1fr)}.fnl-lbl{width:80px;font-size:9px}}
+</style>
+</head>
+<body>
+<div class="d">
+<div class="hdr">
+  <div><h1>Solar<b>Square</b> OTA Dashboard</h1><div class="sub">Live Data from Google Sheets · Auto-refreshes on load</div></div>
+  <div class="hdr-r">
+    <span class="lv loading" id="status">● Loading...</span>
+    <button class="rbtn" onclick="fetchAll()">↻ Refresh</button>
+    <span style="font-size:9px;color:var(--tm)" id="lastUpdate"></span>
+  </div>
+</div>
+
+<div class="share-note" id="shareNote">
+  ⚠️ <b>Sheet not accessible.</b> Please share your Google Sheet as <b>"Anyone with the link → Viewer"</b> for live data to work.
+  Go to your sheet → Click <b>Share</b> → Under General access, select <b>"Anyone with the link"</b> → Set role to <b>Viewer</b> → Done.
+</div>
+
+<div class="tabs">
+  <div class="tab on" onclick="T(0)">Overview</div>
+  <div class="tab" onclick="T(1)">DEV Tracker</div>
+  <div class="tab" onclick="T(2)">3D Design</div>
+  <div class="tab" onclick="T(3)">HOTO 1 & 2</div>
+  <div class="tab" onclick="T(4)">Project Aging</div>
+  <div class="tab" onclick="T(5)">Project Mapping</div>
+  <div class="tab" onclick="T(6)">All Projects</div>
+</div>
+
+<div id="loadingState" class="loading-overlay">
+  <div class="spinner"></div>
+  Fetching live data from Google Sheets...
+</div>
+
+<div id="dashContent" style="display:none">
+
+<div class="pn on" id="t0">
+  <div class="kr" id="kpiRow"></div>
+  <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Project Pipeline (HOTO 1 as Master)</div><div class="pipe" id="pipeline"></div></div>
+  <div class="g2">
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Monthly DEV Requests</div><div class="vc" id="monthlyChart"></div></div>
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>Projects by City</div><div id="cityBars"></div></div>
+  </div>
+  <div id="keyStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
+</div>
+
+<div class="pn" id="t1">
+  <div class="kr" id="devKpis"></div>
+  <div class="g21">
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--gn)"></div>DEV Engineer Workload</div><div class="scr"><table class="mt"><thead><tr><th>Engineer</th><th>DEVs</th><th>Share</th></tr></thead><tbody id="engTable"></tbody></table></div></div>
+    <div>
+      <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>DEV Type Breakdown</div><div id="devTypeBars"></div></div>
+      <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Revision Stats</div><div id="revBars"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="pn" id="t2">
+  <div class="kr" id="d3Kpis"></div>
+  <div class="cd"><div class="ct"><div class="dot" style="background:var(--pr)"></div>3D Design Pipeline Progress</div><div id="d3Bars"></div></div>
+</div>
+
+<div class="pn" id="t3">
+  <div class="kr" id="hotoKpis"></div>
+  <div class="g2">
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>HOTO by City</div><div id="hotoCityBars"></div></div>
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Top Projects by Capacity</div><div class="scr"><table class="mt"><thead><tr><th>Project</th><th>City</th><th>kWp</th><th>₹/Wp</th></tr></thead><tbody id="topCapTable"></tbody></table></div></div>
+  </div>
+</div>
+
+<div class="pn" id="t4">
+  <div class="kr" id="agingKpis"></div>
+  <div class="g2">
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Projects per Stage</div><div id="stageBars"></div></div>
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--rd)"></div>Aging Distribution</div><div id="agingDistBars"></div></div>
+  </div>
+  <div class="cd">
+    <div class="ct"><div class="dot" style="background:var(--ac)"></div>Project Stage & Aging — All Projects</div>
+    <div class="filter-row" id="stageFilterRow"></div>
+    <div class="scr" style="max-height:600px"><table class="mt"><thead><tr><th>Project</th><th>City</th><th>Current Stage</th><th>Stage Since</th><th>Days in Stage</th><th>kWp</th></tr></thead><tbody id="agingTable"></tbody></table></div>
+  </div>
+</div>
+
+<div class="pn" id="t5">
+  <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Cross-Sheet Funnel</div><div id="funnel"></div></div>
+  <div class="g2">
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>Stage Conversion Rates</div><div id="convBars"></div></div>
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--rd)"></div>Bottleneck Analysis</div><div id="bottlenecks"></div></div>
+  </div>
+  <div class="cd">
+    <div class="ct"><div class="dot" style="background:var(--gn)"></div>All Projects — Stage Map</div>
+    <div class="filter-row" id="filterRow"></div>
+    <div class="scr"><table class="mt"><thead><tr><th>Project</th><th>City</th><th>kWp</th><th>₹/Wp</th><th>DEV</th><th>3D</th><th>HOTO 1</th><th>HOTO 2</th></tr></thead><tbody id="mapTable"></tbody></table></div>
+  </div>
+</div>
+
+<div class="pn" id="t6">
+  <div class="cd">
+    <div class="ct"><div class="dot" style="background:var(--ac)"></div>All HOTO 1 Projects — <span id="projCount"></span> entries</div>
+    <div class="scr"><table class="mt"><thead><tr><th>Lead ID</th><th>Project</th><th>City</th><th>Capacity</th><th>Category</th><th>MMS Type</th><th>HOTO 1 Status</th></tr></thead><tbody id="allProjTable"></tbody></table></div>
+  </div>
+</div>
+
+</div></div>
+
+<script>
+const SHEET_ID = '1mqFfGB8ZzEAitV48Asl_CAEdjpUViKr62s2rObCG30E';
+const SHEETS = ['DEV Request', 'DEV Task', '3D Process', 'HOTO 1', 'HOTO 2', 'Approval'];
+let DATA = {};
+
+function T(n){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.getElementById('t'+n).classList.add('on');document.querySelectorAll('.tab')[n].classList.add('on')}
+
+function fetchSheet(name) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+  return fetch(url)
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(csv => {
+      const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
+      return { name, data: parsed.data, fields: parsed.meta.fields };
+    });
+}
+
+function fetchAll() {
+  const st = document.getElementById('status');
+  st.className = 'lv loading'; st.textContent = '● Fetching...';
+  document.getElementById('shareNote').style.display = 'none';
+
+  Promise.all(SHEETS.map(fetchSheet))
+    .then(results => {
+      results.forEach(r => DATA[r.name] = r.data);
+      st.className = 'lv'; st.style.background = 'var(--gd)'; st.style.color = 'var(--gn)';
+      st.textContent = '● Live';
+      document.getElementById('lastUpdate').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('dashContent').style.display = 'block';
+      renderDashboard();
+    })
+    .catch(err => {
+      console.error(err);
+      st.className = 'lv err'; st.textContent = '● Error';
+      document.getElementById('shareNote').style.display = 'block';
+      document.getElementById('loadingState').innerHTML = `<div style="color:var(--rd);font-size:13px">Could not load data. Make sure the Google Sheet is shared as <b>"Anyone with the link"</b>.</div>`;
+    });
+}
+
+function g(row, key) {
+  if(!row) return '';
+  if(row[key] !== undefined) return (row[key]||'').trim();
+  const lk = key.toLowerCase();
+  for(const k in row) { if(k.toLowerCase()===lk) return (row[k]||'').trim(); }
+  for(const k in row) { if(k.toLowerCase().includes(lk)) return (row[k]||'').trim(); }
+  return '';
+}
+function count(arr, key, val) { return arr.filter(r => g(r,key).toLowerCase() === val.toLowerCase()).length; }
+function countNonEmpty(arr, key) { return arr.filter(r => g(r,key)).length; }
+function groupCount(arr, key) {
+  const m = {};
+  arr.forEach(r => { const v = g(r,key); if(v) m[v] = (m[v]||0)+1; });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+function num(v) { const n = parseFloat((v||'').toString().replace(/[^0-9.-]/g,'')); return isNaN(n)?0:n; }
+function pct(a,b) { return b?Math.round(a/b*100):0; }
+function kpiHTML(color, label, value, detail) {
+  return `<div class="k"><div class="tp" style="background:${color}"></div><div class="l">${label}</div><div class="v" style="color:${color}">${value}</div><div class="dt">${detail}</div></div>`;
+}
+function barHTML(label, val, total, color) {
+  return `<div class="hb"><div class="hl"><span>${label}</span><span>${val} / ${total}</span></div><div class="ht"><div class="hf" style="width:${pct(val,total)}%;background:${color}"></div></div></div>`;
+}
+function sbarHTML(label, valStr, pctVal, color) {
+  return `<div class="hb"><div class="hl"><span>${label}</span><span>${valStr}</span></div><div class="ht"><div class="hf" style="width:${pctVal}%;background:${color}"></div></div></div>`;
+}
+
+function renderDashboard() {
+  const devReq = DATA['DEV Request'] || [];
+  const devTask = DATA['DEV Task'] || [];
+  const d3 = DATA['3D Process'] || [];
+  const hoto1 = DATA['HOTO 1'] || [];
+  const hoto2 = DATA['HOTO 2'] || [];
+  const approval = DATA['Approval'] || [];
+
+  const totalProjects = hoto1.length;
+  const devReqCount = devReq.length;
+
+  const cities = groupCount(devReq, 'City');
+  const h1Cities = groupCount(hoto1, 'City');
+
+  const caps = hoto1.map(r=>num(g(r,'Project Size (Capacity)'))||num(g(r,'Project Size'))).filter(v=>v>0);
+  const prices = hoto1.map(r=>num(g(r,'Project price'))).filter(v=>v>0);
+  const totalCap = caps.reduce((a,b)=>a+b,0);
+  const avgCap = caps.length ? totalCap/caps.length : 0;
+  const avgPrice = prices.length ? prices.reduce((a,b)=>a+b,0)/prices.length : 0;
+
+  const devCompleted = devTask.length;
+  const devApproved = devTask.filter(r=>g(r,'Audit Status')==='Approved').length;
+  const devRejected = devTask.filter(r=>g(r,'Audit Status')==='Rejected').length;
+  const engineers = groupCount(devReq, 'DEV Name');
+
+  const devReqIds = new Set(devReq.map(r=>g(r,'Lead ID')).filter(Boolean));
+  const devTaskIds = new Set(devTask.map(r=>g(r,'Lead ID')).filter(Boolean));
+  const d3Ids = new Set(d3.map(r=>g(r,'Lead ID')).filter(Boolean));
+  const h2Ids = new Set(hoto2.map(r=>g(r,'Lead ID')).filter(Boolean));
+
+  const h1Completed = hoto1.filter(r=>g(r,'HOTO 1 Status')==='Completed').length;
+
+  const h2Fields = Object.keys(hoto2[0]||{});
+  const h2CompletedField = h2Fields.find(k=>k.toLowerCase().includes('hoto 2 completed'));
+  const h2Done = h2CompletedField ? hoto2.filter(r=>(r[h2CompletedField]||'').trim()).length : 0;
+
+  let stDevReq=0, stDevTask=0, st3D=0, stH2=0;
+  hoto1.forEach(r=>{
+    const lid = g(r,'Lead ID');
+    if(devReqIds.has(lid)) stDevReq++;
+    if(devTaskIds.has(lid)) stDevTask++;
+    if(d3Ids.has(lid)) st3D++;
+    if(h2Ids.has(lid)) stH2++;
+  });
+
+  const monthlyMap = {};
+  devReq.forEach(r=>{
+    const ts = g(r,'Timestamp');
+    let m = ts.match(/(\d{1,2})-([A-Za-z]+)-(\d{4})/);
+    if(m){ const k=m[2].slice(0,3)+' '+m[3].slice(2); monthlyMap[k]=(monthlyMap[k]||0)+1; }
+    else {
+      m = ts.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if(m){ const mn=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[1]]||''; const k=mn+' '+m[3].slice(2); if(mn) monthlyMap[k]=(monthlyMap[k]||0)+1; }
+    }
+  });
+  const monthOrder = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthly = Object.entries(monthlyMap).sort((a,b)=>{
+    const [am,ay]=a[0].split(' '), [bm,by]=b[0].split(' ');
+    return (ay+monthOrder.indexOf(am)) > (by+monthOrder.indexOf(bm)) ? 1 : -1;
+  });
+
+  const colors = ['var(--bl)','var(--cy)','var(--pr)','var(--ac)','var(--gn)','var(--pk)','var(--tm)'];
+
+  // ===== RENDER TAB 0: OVERVIEW =====
+  document.getElementById('kpiRow').innerHTML =
+    kpiHTML('var(--ac)','Total Projects',totalProjects,`Master Count from HOTO 1`) +
+    kpiHTML('var(--gn)','Total Capacity',totalCap.toFixed(0)+`<span style="font-size:12px;color:var(--tm)"> kWp</span>`,`Avg ${avgCap.toFixed(1)} kWp`) +
+    kpiHTML('var(--bl)','DEV Requests',devReqCount,`${pct(stDevReq,totalProjects)}% of HOTO 1 projects`) +
+    kpiHTML('var(--pr)','DEV Completed',devCompleted,`${pct(devApproved,devCompleted)}% audit approved`) +
+    kpiHTML('var(--cy)','Designs Tracked',d3.length,`In 3D Process`) +
+    kpiHTML('var(--pk)','HOTO 2 Done',h2Done,`${pct(h2Done,totalProjects)}% of ${totalProjects}`);
+
+  document.getElementById('pipeline').innerHTML =
+    `<div class="ps" style="background:var(--ag)"><div class="pv" style="color:var(--ac)">${totalProjects}</div><div class="pl" style="color:var(--ac)">HOTO 1</div></div>` +
+    `<div class="ps" style="background:var(--bld)"><div class="pv" style="color:var(--bl)">${stDevReq}</div><div class="pl" style="color:var(--bl)">DEV Req</div></div>` +
+    `<div class="ps" style="background:var(--prd)"><div class="pv" style="color:var(--pr)">${stDevTask}</div><div class="pl" style="color:var(--pr)">DEV Done</div></div>` +
+    `<div class="ps" style="background:var(--cyd)"><div class="pv" style="color:var(--cy)">${st3D}</div><div class="pl" style="color:var(--cy)">3D Design</div></div>` +
+    `<div class="ps" style="background:var(--gd)"><div class="pv" style="color:var(--gn)">${stH2}</div><div class="pl" style="color:var(--gn)">HOTO 2 Sched</div></div>` +
+    `<div class="ps" style="background:var(--pkd)"><div class="pv" style="color:var(--pk)">${h2Done}</div><div class="pl" style="color:var(--pk)">HOTO 2 Done</div></div>`;
+
+  const mEl = document.getElementById('monthlyChart');
+  const mMax = Math.max(...monthly.map(m=>m[1]),1);
+  mEl.innerHTML = monthly.slice(-8).map((m,i)=>
+    `<div class="vw"><div class="vv">${m[1]}</div><div class="vb" style="height:${(m[1]/mMax)*100}%;background:${i%2?'#fbbf24':'#f59e0b'}"></div><div class="vl">${m[0]}</div></div>`
+  ).join('');
+
+  const cEl = document.getElementById('cityBars');
+  const cMax = cities[0]?cities[0][1]:1;
+  cEl.innerHTML = cities.slice(0,8).map((c,i)=>
+    sbarHTML(c[0], c[1], pct(c[1],cMax), colors[i%colors.length])
+  ).join('');
+
+  const penetrative = hoto1.filter(r=>g(r,'Project category').toLowerCase().includes('penetrative')).length;
+  const prefab = hoto1.filter(r=>g(r,'MMS type').toLowerCase().includes('pre-fab')).length;
+  document.getElementById('keyStats').innerHTML =
+    `<div class="sb" style="border-left:3px solid var(--ac)"><div class="sl" style="color:var(--ac)">Penetrative</div><div class="sv" style="color:var(--ac)">${pct(penetrative,totalProjects)}%</div><div class="sd">${penetrative} of ${totalProjects}</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--bl)"><div class="sl" style="color:var(--bl)">Pre-fab MMS</div><div class="sv" style="color:var(--bl)">${pct(prefab,totalProjects)}%</div><div class="sd">${prefab} of ${totalProjects}</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--gn)"><div class="sl" style="color:var(--gn)">Avg Price</div><div class="sv" style="color:var(--gn)">₹${avgPrice.toFixed(1)}</div><div class="sd">per Wp</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--pr)"><div class="sl" style="color:var(--pr)">HOTO 1 Done</div><div class="sv" style="color:var(--pr)">${pct(h1Completed,totalProjects)}%</div><div class="sd">${h1Completed} of ${totalProjects}</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--pk)"><div class="sl" style="color:var(--pk)">Avg Capacity</div><div class="sv" style="color:var(--pk)">${avgCap.toFixed(1)}</div><div class="sd">kWp per project</div></div>`;
+
+  // ===== TAB 1: DEV TRACKER =====
+  document.getElementById('devKpis').innerHTML =
+    kpiHTML('var(--bl)','DEV Requests',devReqCount,'Total submissions') +
+    kpiHTML('var(--gn)','DEV Completed',devCompleted,'Tracked in DEV Task') +
+    kpiHTML('var(--ac)','Audit Approved',devApproved,`${pct(devApproved,devCompleted)}% approval rate`) +
+    kpiHTML('var(--rd)','Audit Rejected',devRejected,`${pct(devRejected,devCompleted)}% rejection`);
+
+  const eEl = document.getElementById('engTable');
+  const eMax = engineers[0]?engineers[0][1]:1;
+  eEl.innerHTML = engineers.map((e,i)=>
+    `<tr><td style="font-weight:500">${e[0]}</td><td>${e[1]}</td><td><div style="background:var(--sf2);height:5px;border-radius:3px;width:90px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;border-radius:3px;width:${pct(e[1],eMax)}%;background:${colors[i%colors.length]}"></div></div></td></tr>`
+  ).join('');
+
+  const devTypes = groupCount(devReq, 'DEV Type');
+  const dtMax = devTypes[0]?devTypes[0][1]:1;
+  document.getElementById('devTypeBars').innerHTML = devTypes.map((d,i)=>sbarHTML(d[0],d[1],pct(d[1],dtMax),colors[i%colors.length])).join('');
+
+  // ===== TAB 2: 3D DESIGN =====
+  const d3Total = d3.length;
+  const qhseAppr = d3.filter(r=>g(r,'QHSE Status')==='Approved').length;
+  const qhseRej = d3.filter(r=>g(r,'QHSE Status')==='Rejected').length;
+  const tsmVerified = countNonEmpty(d3, 'TSM Verification Status');
+
+  document.getElementById('d3Kpis').innerHTML =
+    kpiHTML('var(--pr)','3D Designs',d3Total,'Entries tracked') +
+    kpiHTML('var(--gn)','QHSE Approved',qhseAppr,`${pct(qhseAppr,d3Total)}%`) +
+    kpiHTML('var(--rd)','QHSE Rejected',qhseRej,`${pct(qhseRej,d3Total)}%`) +
+    kpiHTML('var(--cy)','TSM Verified',tsmVerified,`${pct(tsmVerified,d3Total)}%`);
+
+  document.getElementById('d3Bars').innerHTML =
+    barHTML('QHSE Approved',qhseAppr,d3Total,'var(--gn)') +
+    barHTML('QHSE Rejected',qhseRej,d3Total,'var(--rd)') +
+    barHTML('TSM Verified',tsmVerified,d3Total,'var(--cy)');
+
+  // ===== TAB 3: HOTO =====
+  document.getElementById('hotoKpis').innerHTML =
+    kpiHTML('var(--ac)','HOTO 1 Projects',totalProjects,'Master project list') +
+    kpiHTML('var(--gn)','HOTO 1 Done',h1Completed,`${pct(h1Completed,totalProjects)}%`) +
+    kpiHTML('var(--pk)','HOTO 2 Total',hoto2.length,'Entries tracked') +
+    kpiHTML('var(--cy)','HOTO 2 Done',h2Done,`${pct(h2Done,hoto2.length)}%`);
+
+  const hcMax = h1Cities[0]?h1Cities[0][1]:1;
+  document.getElementById('hotoCityBars').innerHTML = h1Cities.slice(0,8).map((c,i)=>sbarHTML(c[0],c[1],pct(c[1],hcMax),colors[i%colors.length])).join('');
+
+  const topCap = hoto1.filter(r=>num(g(r,'Project Size (Capacity)'))>0)
+    .sort((a,b)=>num(g(b,'Project Size (Capacity)'))-num(g(a,'Project Size (Capacity)')))
+    .slice(0,10);
+  document.getElementById('topCapTable').innerHTML = topCap.map(r=>
+    `<tr><td style="font-weight:500">${g(r,'Project name')}</td><td>${g(r,'City')}</td><td>${num(g(r,'Project Size (Capacity)')).toFixed(1)}</td><td>${num(g(r,'Project price')).toFixed(1)}</td></tr>`
+  ).join('');
+
+  // ===== TAB 5: PROJECT MAPPING =====
+  document.getElementById('funnel').innerHTML = [
+    {l:'HOTO 1 (Master)',v:totalProjects,c:'var(--ac)',bg:'var(--ag)'},
+    {l:'DEV Requested',v:stDevReq,c:'var(--bl)',bg:'var(--bld)'},
+    {l:'DEV Completed',v:stDevTask,c:'var(--pr)',bg:'var(--prd)'},
+    {l:'3D Design',v:st3D,c:'var(--cy)',bg:'var(--cyd)'},
+    {l:'HOTO 2 Scheduled',v:stH2,c:'var(--gn)',bg:'var(--gd)'},
+    {l:'HOTO 2 Done',v:h2Done,c:'var(--pk)',bg:'var(--pkd)'},
+  ].map(f=>`<div class="fnl-row"><div class="fnl-lbl" style="color:${f.c}">${f.l}</div><div class="fnl-bar" style="width:${pct(f.v,totalProjects)}%;background:${f.bg};color:${f.c}">${f.v}</div><div class="fnl-pct">${pct(f.v,totalProjects)}%</div></div>`).join('');
+
+  document.getElementById('convBars').innerHTML =
+    sbarHTML('HOTO 1 → DEV Req',pct(stDevReq,totalProjects)+'%',pct(stDevReq,totalProjects),'var(--bl)') +
+    sbarHTML('DEV Req → DEV Done',pct(stDevTask,stDevReq)+'%',pct(stDevTask,stDevReq),'var(--pr)') +
+    sbarHTML('DEV Done → 3D',pct(st3D,stDevTask)+'%',pct(st3D,stDevTask),'var(--cy)') +
+    sbarHTML('Overall → HOTO 2 Done',pct(h2Done,totalProjects)+'%',pct(h2Done,totalProjects),'var(--ac)');
+
+  const biggestDrop = [{l:'DEV → 3D',d:stDevTask-st3D},{l:'3D → HOTO2',d:st3D-stH2},{l:'HOTO2 Sched → Done',d:stH2-h2Done}].sort((a,b)=>b.d-a.d)[0];
+  document.getElementById('bottlenecks').innerHTML =
+    `<div class="sb" style="border-left:3px solid var(--rd);margin-bottom:8px"><div class="sl" style="color:var(--rd)">Biggest Drop-off</div><div class="sv" style="color:var(--rd)">${biggestDrop.l}</div><div class="sd">${biggestDrop.d} projects stuck</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--ac);margin-bottom:8px"><div class="sl" style="color:var(--ac)">HOTO 2 Backlog</div><div class="sv" style="color:var(--ac)">${totalProjects - stH2}</div><div class="sd">Projects without HOTO 2</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--gn)"><div class="sl" style="color:var(--gn)">Completion Rate</div><div class="sv" style="color:var(--gn)">${pct(h2Done,totalProjects)}%</div><div class="sd">End-to-end</div></div>`;
+
+  const allCitiesSet = [...new Set(hoto1.map(r=>g(r,'City')).filter(Boolean))];
+  document.getElementById('filterRow').innerHTML =
+    `<div class="fbtn on" onclick="filterMap('all',this)">All (${totalProjects})</div>` +
+    allCitiesSet.slice(0,6).map(c=>`<div class="fbtn" onclick="filterMap('${c}',this)">${c}</div>`).join('');
+
+  window._mapData = hoto1.map(r=>{
+    const lid = g(r,'Lead ID');
+    return {
+      name:g(r,'Project name'),
+      city:g(r,'City'),
+      cap:num(g(r,'Project Size (Capacity)')),
+      price:num(g(r,'Project price')),
+      devReq:devReqIds.has(lid),
+      devDone:devTaskIds.has(lid),
+      has3d:d3Ids.has(lid),
+      h2:h2Ids.has(lid),
+      h1Status:g(r,'HOTO 1 Status')
+    };
+  });
+  filterMap('all', document.querySelector('.fbtn'));
+
+  // ===== TAB 6: ALL PROJECTS =====
+  document.getElementById('projCount').textContent = totalProjects;
+  document.getElementById('allProjTable').innerHTML = hoto1.map(r=>
+    `<tr><td style="font-size:9px;color:var(--tm)">${g(r,'Lead ID').slice(0,25)}</td><td style="font-weight:500">${g(r,'Project name')}</td><td>${g(r,'City')}</td><td>${num(g(r,'Project Size (Capacity)'))||'—'}</td><td>${g(r,'Project category')||'—'}</td><td>${g(r,'MMS type')||'—'}</td><td>${g(r,'HOTO 1 Status')==='Completed'?'<span class="pill g">Complete</span>':'<span class="pill y">Pending</span>'}</td></tr>`
+  ).join('');
+
+  renderAging();
+}
+
+function filterMap(filter, el) {
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const tb = document.getElementById('mapTable');
+  const dot = (v) => v ? '<span class="sdot yes">✓</span>' : '<span class="sdot no">–</span>';
+  tb.innerHTML = window._mapData
+    .filter(p => filter==='all' || p.city===filter)
+    .map(p=>`<tr><td style="font-weight:500">${p.name}</td><td>${p.city}</td><td>${p.cap||'—'}</td><td>${p.price||'—'}</td><td>${dot(p.devDone)}</td><td>${dot(p.has3d)}</td><td>${p.h1Status==='Completed'?'<span class="sdot yes">✓</span>':'<span class="sdot no">–</span>'}</td><td>${dot(p.h2)}</td></tr>`)
+    .join('');
+}
+
+function parseD(v) {
+  if(!v) return null;
+  const s = (v||'').toString().trim();
+  if(!s) return null;
+  let d = new Date(s);
+  if(!isNaN(d)) return d;
+  const m1 = s.match(/(\d{1,2})-([A-Za-z]+)-(\d{4})/);
+  if(m1) { d = new Date(`${m1[2]} ${m1[1]}, ${m1[3]}`); if(!isNaN(d)) return d; }
+  return null;
+}
+function maxD(rows, field) {
+  let mx = null;
+  rows.forEach(r => {
+    const d = parseD(g(r, field));
+    if(d && (!mx || d > mx)) mx = d;
+  });
+  return mx;
+}
+function daysBetween(d) {
+  if(!d) return null;
+  return Math.floor((new Date() - d) / 86400000);
+}
+
+// === STAGE CALCULATION (Using HOTO 1 as Master Framework) ===
+function calculateProjectStages() {
+  const hoto1 = DATA['HOTO 1'] || [];
+  const devTask = DATA['DEV Task'] || [];
+  const d3 = DATA['3D Process'] || [];
+  const approval = DATA['Approval'] || [];
+  const hoto2 = DATA['HOTO 2'] || [];
+
+  // Strictly maps everything relative to unique projects configured inside HOTO 1 
+  const projNames = [...new Set(hoto1.map(r => g(r,'Project name')).filter(Boolean))];
+  const results = [];
+
+  projNames.forEach(proj => {
+    const h1Rows = hoto1.filter(r => g(r,'Project name') === proj);
+    const dRows = devTask.filter(r => g(r,'Project Name') === proj);
+    const d3Rows = d3.filter(r => g(r,'Project Name') === proj);
+    const aRows = approval.filter(r => g(r,'Lead name') === proj);
+    const h2Rows = hoto2.filter(r => g(r,'Project name') === proj);
+
+    const h1CompDate = maxD(h1Rows, 'HOTO 1 completed on');
+    const devDate = maxD(dRows, 'DEV Completed Timestamp');
+    const auditDate = maxD(dRows, 'Audit Completed on');
+    const d3ApprDate = maxD(d3Rows, '3D Approved on');
+
+    const qhseApprRows = d3Rows.filter(r => g(r,'QHSE Status') === 'Approved');
+    const qhseDate = maxD(qhseApprRows, 'QHSE Completed Date');
+    const tsmLayoutDate = maxD(d3Rows.filter(r => g(r,'TSM Approved On')), 'TSM Approved On');
+
+    const tsmApprRows = d3Rows.filter(r => (g(r,'TSM Verification Status')||'').toUpperCase().trim() === 'APPROVED');
+    const tsmDate = maxD(tsmApprRows, 'TSM Completed Date');
+    const designDate = maxD(d3Rows, '3D Design Admin Approval Timestamp');
+
+    const finApprRows = aRows.filter(r => g(r,'Finance Team Approval Status') === 'Approved');
+    const finDate = maxD(finApprRows, 'Finance Team Approved On');
+
+    const anshApprRows = aRows.filter(r => g(r,'Anshuman Approval Status') === 'Approved');
+    const anshDate = maxD(anshApprRows, 'Anshuman Approved On');
+
+    const cxApprRows = d3Rows.filter(r => g(r,'3D Design Sent to Client for Approval Status') === 'Approved');
+    const cxDate = maxD(d3Rows, '3D Design Approval Timestamp');
+
+    const h2DoneRows = h2Rows.filter(r => g(r,'All discussions completed?') === 'YES');
+    const h2Date = maxD(h2DoneRows, 'HOTO 2 completed On');
+
+    const c_HOTO1 = h1Rows.some(r => g(r,'HOTO 1 completed ?') === 'Completed');
+    const c_DEV = dRows.length > 0 && !dRows.some(r => !g(r,'DEV Completed Timestamp'));
+    const c_DEV_Approve = dRows.length > 0 && !dRows.some(r => !g(r,'Audit Completed on'));
+    const c_3DDesign = !!d3ApprDate;
+    const c_QHSE = !!qhseDate;
+    const c_TSM_Layout = !!tsmLayoutDate;
+    const c_TSM = !!tsmDate;
+    const c_Design = d3Rows.length > 0 && !d3Rows.some(r => !g(r,'3D Design Admin Approval Timestamp'));
+
+    const totalLeads = aRows.filter(r => g(r,'Lead name')).length;
+    const finApproved = finApprRows.length;
+    const c_Finance = totalLeads > 0 && totalLeads === finApproved;
+
+    const anshApproved = anshApprRows.length;
+    const c_Anshuman = totalLeads > 0 && totalLeads === anshApproved;
+    const c_CX = cxApprRows.length > 0;
+    const c_HOTO2 = h2DoneRows.length > 0;
+
+    let stage, stageDate;
+    if (!c_HOTO1)                              { stage = '1 HOTO 1 Stage';              stageDate = h1CompDate; }
+    else if (c_HOTO1 && !c_DEV)                { stage = '2 DEV Stage';                stageDate = h1CompDate; }
+    else if (c_DEV && !c_DEV_Approve)         { stage = '2.5 DEV Approve Stage';      stageDate = devDate; }
+    else if (c_DEV_Approve && !c_3DDesign)    { stage = '2.7 3D Design Stage';        stageDate = auditDate; }
+    else if (c_3DDesign && !c_QHSE)           { stage = '3 QHSE Stage';               stageDate = d3ApprDate; }
+    else if (c_QHSE && !c_TSM_Layout)         { stage = '4 TSM Layout Stage';         stageDate = qhseDate; }
+    else if (c_TSM_Layout && !c_TSM)          { stage = '4.5 TSM Stage';              stageDate = tsmLayoutDate; }
+    else if (c_TSM && !c_Design)              { stage = '5 Design Stage';             stageDate = tsmDate; }
+    else if (c_Design && !c_Finance)          { stage = '6 Finance Approval';         stageDate = designDate; }
+    else if (c_Finance && !c_Anshuman)        { stage = '7 Anshuman Approval';        stageDate = finDate; }
+    else if (c_Anshuman && !c_CX)             { stage = '8 CX Approval';              stageDate = anshDate; }
+    else if (c_CX && !c_HOTO2)                { stage = '9 HOTO 2 Stage';             stageDate = cxDate; }
+    else if (c_HOTO2)                         { stage = '✓ HOTO 2 Completed';         stageDate = h2Date; }
+    else                                      { stage = 'Unknown';                    stageDate = null; }
+
+    const h1Match = h1Rows[0];
+    const city = h1Match ? g(h1Match,'City') : '';
+    const cap = h1Match ? num(g(h1Match,'Project Size (Capacity)')) : 0;
+
+    results.push({
+      name: proj, city, cap, stage, stageDate,
+      days: daysBetween(stageDate),
+      completed: stage.startsWith('✓')
+    });
+  });
+
+  return results.sort((a,b) => (b.days||0) - (a.days||0));
+}
+
+// ===== RENDER AGING TAB =====
+function renderAging() {
+  const projects = calculateProjectStages();
+  window._agingData = projects;
+
+  const total = projects.length;
+  const completed = projects.filter(p => p.completed).length;
+  const inProgress = total - completed;
+  const avgDays = projects.filter(p=>p.days!=null&&!p.completed).reduce((s,p)=>s+p.days,0) / (inProgress||1);
+  const over30 = projects.filter(p=>p.days>30&&!p.completed).length;
+
+  document.getElementById('agingKpis').innerHTML =
+    kpiHTML('var(--ac)','Total Projects',total,'From HOTO 1 Master') +
+    kpiHTML('var(--gn)','Completed',completed,`${pct(completed,total)}% done`) +
+    kpiHTML('var(--bl)','In Progress',inProgress,`Across all stages`) +
+    kpiHTML('var(--rd)','Avg Days in Stage',Math.round(avgDays),'Active projects') +
+    kpiHTML('var(--pk)','Over 30 Days',over30,`${pct(over30,inProgress)}% of active`);
+
+  const stageGroups = {};
+  projects.forEach(p => { stageGroups[p.stage] = (stageGroups[p.stage]||0)+1; });
+  const stageEntries = Object.entries(stageGroups).sort((a,b)=> {
+    const na = parseFloat(a[0]) || 99, nb = parseFloat(b[0]) || 99;
+    return na - nb;
+  });
+  const stMax = Math.max(...stageEntries.map(s=>s[1]),1);
+  const stColors = ['var(--ac)','var(--bl)','var(--pr)','var(--cy)','var(--gn)','var(--pk)','var(--rd)'];
+  document.getElementById('stageBars').innerHTML = stageEntries.map((s,i) =>
+    sbarHTML(s[0], s[1], pct(s[1],stMax), stColors[i%stColors.length])
+  ).join('');
+
+  const aging = [{l:'0–7 days',c:0},{l:'8–15 days',c:0},{l:'16–30 days',c:0},{l:'31–60 days',c:0},{l:'60+ days',c:0}];
+  projects.filter(p=>!p.completed&&p.days!=null).forEach(p=>{
+    if(p.days<=7) aging[0].c++;
+    else if(p.days<=15) aging[1].c++;
+    else if(p.days<=30) aging[2].c++;
+    else if(p.days<=60) aging[3].c++;
+    else aging[4].c++;
+  });
+  const agMax = Math.max(...aging.map(a=>a.c),1);
+  const agColors = ['var(--gn)','var(--cy)','var(--ac)','var(--pk)','var(--rd)'];
+  document.getElementById('agingDistBars').innerHTML = aging.map((a,i)=>
+    sbarHTML(a.l, a.c+' projects', pct(a.c,agMax), agColors[i])
+  ).join('');
+
+  document.getElementById('stageFilterRow').innerHTML =
+    `<div class="fbtn on" onclick="filterAging('all',this)">All (${total})</div>` +
+    `<div class="fbtn" onclick="filterAging('active',this)">Active Only</div>` +
+    `<div class="fbtn" onclick="filterAging('over30',this)">Over 30 Days</div>` +
+    `<div class="fbtn" onclick="filterAging('completed',this)">Completed</div>`;
+
+  filterAging('all', document.querySelector('#stageFilterRow .fbtn'));
+}
+
+function agingBadge(days, completed) {
+  if(completed) return '<span class="pill g">Done</span>';
+  if(days==null) return '<span class="pill" style="background:var(--sf2);color:var(--tm)">N/A</span>';
+  if(days<=7) return `<span class="pill g">${days}d</span>`;
+  if(days<=15) return `<span class="pill cy">${days}d</span>`;
+  if(days<=30) return `<span class="pill y">${days}d</span>`;
+  if(days<=60) return `<span class="pill" style="background:var(--pkd);color:var(--pk)">${days}d</span>`;
+  return `<span class="pill r">${days}d</span>`;
+}
+
+function filterAging(filter, el) {
+  document.querySelectorAll('#stageFilterRow .fbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const tb = document.getElementById('agingTable');
+  let data = window._agingData || [];
+  if(filter==='active') data = data.filter(p=>!p.completed);
+  else if(filter==='over30') data = data.filter(p=>p.days>30&&!p.completed);
+  else if(filter==='completed') data = data.filter(p=>p.completed);
+
+  tb.innerHTML = data.map(p =>
+    `<tr><td style="font-weight:500">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${p.completed?'var(--gn)':'var(--ac)'}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td><td>${p.cap||'—'}</td></tr>`
+  ).join('');
+}
+
+fetchAll();
+</script>
+</body>
+</html>
