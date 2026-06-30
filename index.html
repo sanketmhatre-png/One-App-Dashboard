@@ -181,10 +181,85 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 
 <div class="pn" id="t2">
   <div class="kr" id="d3Kpis"></div>
-  <div class="cd"><div class="ct"><div class="dot" style="background:var(--pr)"></div>3D Design Pipeline Progress</div><div id="d3Bars"></div></div>
+  <div class="cd"><div class="ct"><div class="dot" style="background:var(--pr)"></div>Overall 3D Process Funnel (Drawing → QHSE → TSM)</div><div id="d3Bars"></div></div>
+
+  <div class="cd" style="border-left:3px solid var(--pr)">
+    <div class="ct"><div class="dot" style="background:var(--pr)"></div>Stage 1 — 3D Drawing</div>
+    <div class="g3">
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Status Breakdown</div>
+        <div id="d3DrawStatusBars"></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Client Approval Status</div>
+        <div id="d3ClientStatusBars"></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">TAT Distribution (Start → Completed)</div>
+        <div id="d3DrawTatBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cd" style="border-left:3px solid var(--gn)">
+    <div class="ct"><div class="dot" style="background:var(--gn)"></div>Stage 2 — QHSE</div>
+    <div class="g3">
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">QHSE Status Breakdown</div>
+        <div id="qhseStatusBars"></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Rejection Reasons (if tracked)</div>
+        <div id="qhseRejectBars"></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">TAT Distribution (3D Approved → QHSE Done)</div>
+        <div id="qhseTatBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cd" style="border-left:3px solid var(--cy)">
+    <div class="ct"><div class="dot" style="background:var(--cy)"></div>Stage 3 — TSM</div>
+    <div class="g3">
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">TSM Verification Status</div>
+        <div id="tsmStatusBars"></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">TSM Layout vs Final Verification</div>
+        <div id="tsmLayoutBars"></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--tm);font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">TAT Distribution (Layout Received → TSM Done)</div>
+        <div id="tsmTatBars"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cd">
+    <div class="ct"><div class="dot" style="background:var(--ac)"></div>Bottleneck Summary — Which Stage Takes Longest</div>
+    <div id="d3BottleneckSummary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px"></div>
+  </div>
+
+  <div class="cd">
+    <div class="ct"><div class="dot" style="background:var(--pk)"></div>Per-Project 3D Process Detail</div>
+    <div class="scr" style="max-height:500px">
+      <table class="mt">
+        <thead><tr>
+          <th>Project</th><th>Lead ID</th>
+          <th>3D Status</th><th>Client Status</th><th>Drawing TAT</th>
+          <th>QHSE Status</th><th>QHSE TAT</th>
+          <th>TSM Status</th><th>TSM TAT</th>
+        </tr></thead>
+        <tbody id="d3DetailTable"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <div class="pn" id="t3">
+
   <div class="kr" id="hotoKpis"></div>
   <div class="g2">
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>HOTO by City</div><div id="hotoCityBars"></div></div>
@@ -437,12 +512,7 @@ function renderDashboard(){
   document.getElementById('devTypeBars').innerHTML=devTypes.map((d,i)=>sbarHTML(d[0],d[1],pct(d[1],dtMax),colors[i%colors.length])).join('');
 
   // TAB 2
-  const d3Total=d3.length;const qhseAppr=d3.filter(r=>g(r,'QHSE Status')==='Approved').length;
-  const qhseRej=d3.filter(r=>g(r,'QHSE Status')==='Rejected').length;const tsmVerified=countNonEmpty(d3,'TSM Verification Status');
-  document.getElementById('d3Kpis').innerHTML=
-    kpiHTML('var(--pr)','3D Designs',d3Total,'Entries tracked')+kpiHTML('var(--gn)','QHSE Approved',qhseAppr,pct(qhseAppr,d3Total)+'%')+
-    kpiHTML('var(--rd)','QHSE Rejected',qhseRej,pct(qhseRej,d3Total)+'%')+kpiHTML('var(--cy)','TSM Verified',tsmVerified,pct(tsmVerified,d3Total)+'%');
-  document.getElementById('d3Bars').innerHTML=barHTML('QHSE Approved',qhseAppr,d3Total,'var(--gn)')+barHTML('QHSE Rejected',qhseRej,d3Total,'var(--rd)')+barHTML('TSM Verified',tsmVerified,d3Total,'var(--cy)');
+  render3DProcess(d3);
 
   // TAB 3
   document.getElementById('hotoKpis').innerHTML=
@@ -853,6 +923,152 @@ function renderMatrix(mode){
   html+=`</tr></tbody>`;
 
   document.getElementById('paMatrixTable').innerHTML=html;
+}
+
+// ===== AGING =====
+// ===== TAB 2: DEEP 3D PROCESS ANALYSIS (Drawing -> QHSE -> TSM) =====
+function tatDaysSimple(startStr, endStr){
+  const sd = parseD(startStr), ed = parseD(endStr);
+  if(!sd || !ed) return null;
+  const diff = Math.round((ed - sd) / 86400000);
+  return diff >= 0 ? diff : null;
+}
+function tatBucketBars(tatArr, containerId){
+  const buckets = [{l:'0–3 days',c:0},{l:'4–7 days',c:0},{l:'8–15 days',c:0},{l:'16–30 days',c:0},{l:'30+ days',c:0}];
+  tatArr.filter(v=>v!=null).forEach(v=>{
+    if(v<=3) buckets[0].c++; else if(v<=7) buckets[1].c++; else if(v<=15) buckets[2].c++; else if(v<=30) buckets[3].c++; else buckets[4].c++;
+  });
+  const max = Math.max(...buckets.map(b=>b.c),1);
+  const cols = ['var(--gn)','var(--cy)','var(--ac)','var(--pk)','var(--rd)'];
+  document.getElementById(containerId).innerHTML = buckets.map((b,i)=>sbarHTML(b.l, b.c+' projects', pct(b.c,max), cols[i])).join('') ||
+    '<div style="font-size:11px;color:var(--tm)">No data available</div>';
+}
+function statusBars(arr, key, containerId, colorMap){
+  const groups = groupCount(arr, key);
+  if(!groups.length){ document.getElementById(containerId).innerHTML = '<div style="font-size:11px;color:var(--tm)">No data available</div>'; return; }
+  const max = groups[0][1];
+  const defaultColors = {'Approved':'var(--gn)','Rejected':'var(--rd)','Pending':'var(--ac)','In Progress':'var(--bl)','Completed':'var(--gn)'};
+  document.getElementById(containerId).innerHTML = groups.map(([label,val])=>{
+    const color = (colorMap && colorMap[label]) || defaultColors[label] || 'var(--tm)';
+    return sbarHTML(label, val, pct(val,max), color);
+  }).join('');
+}
+
+function render3DProcess(d3){
+  const d3Total = d3.length;
+
+  // Stage status fields (fuzzy-matched via g())
+  const drawApprStatus = '3D Design Sent to Client for Approval Status'; // reused for "3D status" as fallback if no dedicated field
+  const qhseAppr = d3.filter(r=>g(r,'QHSE Status')==='Approved').length;
+  const qhseRej = d3.filter(r=>g(r,'QHSE Status')==='Rejected').length;
+  const tsmVerified = d3.filter(r=>(g(r,'TSM Verification Status')||'').trim().toLowerCase()==='approved').length;
+  const drawingDone = d3.filter(r=>g(r,'3D Completed on')!=='').length;
+  const clientApproved = d3.filter(r=>(g(r,'3D Design Sent to Client for Approval Status')||'').trim()==='Approved').length;
+
+  // Top KPI row
+  document.getElementById('d3Kpis').innerHTML =
+    kpiHTML('var(--pr)','Total 3D Records',d3Total,'Entries tracked') +
+    kpiHTML('var(--bl)','Drawing Completed',drawingDone,pct(drawingDone,d3Total)+'%') +
+    kpiHTML('var(--gn)','QHSE Approved',qhseAppr,pct(qhseAppr,d3Total)+'%') +
+    kpiHTML('var(--rd)','QHSE Rejected',qhseRej,pct(qhseRej,d3Total)+'%') +
+    kpiHTML('var(--cy)','TSM Verified',tsmVerified,pct(tsmVerified,d3Total)+'%') +
+    kpiHTML('var(--ac)','Client Approved',clientApproved,pct(clientApproved,d3Total)+'%');
+
+  // Overall funnel bars: Drawing -> Client Approved -> QHSE -> TSM
+  document.getElementById('d3Bars').innerHTML =
+    barHTML('3D Drawing Completed', drawingDone, d3Total, 'var(--pr)') +
+    barHTML('Sent & Approved by Client', clientApproved, d3Total, 'var(--ac)') +
+    barHTML('QHSE Approved', qhseAppr, d3Total, 'var(--gn)') +
+    barHTML('TSM Verified', tsmVerified, d3Total, 'var(--cy)');
+
+  // ---- STAGE 1: 3D DRAWING ----
+  // Status: completed vs pending (based on 3D Completed on presence)
+  const drawStatusGroups = [
+    ['Completed', drawingDone],
+    ['Pending', d3Total - drawingDone]
+  ];
+  const drawMax = Math.max(...drawStatusGroups.map(g=>g[1]),1);
+  document.getElementById('d3DrawStatusBars').innerHTML = drawStatusGroups.map(([l,v])=>
+    sbarHTML(l, v, pct(v,drawMax), l==='Completed'?'var(--gn)':'var(--ac)')
+  ).join('');
+
+  statusBars(d3, '3D Design Sent to Client for Approval Status', 'd3ClientStatusBars');
+
+  const drawTAT = d3.map(r=>tatDaysSimple(g(r,'3D Design Start Time (DEV Audit Approval / Last Rejection)'), g(r,'3D Completed on')));
+  tatBucketBars(drawTAT, 'd3DrawTatBars');
+
+  // ---- STAGE 2: QHSE ----
+  statusBars(d3, 'QHSE Status', 'qhseStatusBars');
+
+  // Rejection reasons — try common field name variants; show message if absent
+  const rejectReasonGroups = groupCount(d3.filter(r=>g(r,'QHSE Status')==='Rejected'), 'QHSE Rejection Reason');
+  if(rejectReasonGroups.length){
+    const rMax = rejectReasonGroups[0][1];
+    document.getElementById('qhseRejectBars').innerHTML = rejectReasonGroups.map(([l,v],i)=>
+      sbarHTML(l, v, pct(v,rMax), ['var(--rd)','var(--pk)','var(--ac)','var(--pr)'][i%4])
+    ).join('');
+  } else {
+    document.getElementById('qhseRejectBars').innerHTML = `<div style="font-size:11px;color:var(--tm)">No rejection-reason column found in sheet — showing rejected count only: <b style="color:var(--rd)">${qhseRej}</b></div>`;
+  }
+
+  const qhseTAT = d3.map(r=>tatDaysSimple(g(r,'3D Approved on'), g(r,'QHSE Completed Date')));
+  tatBucketBars(qhseTAT, 'qhseTatBars');
+
+  // ---- STAGE 3: TSM ----
+  statusBars(d3, 'TSM Verification Status', 'tsmStatusBars');
+
+  const tsmLayoutSent = countNonEmpty(d3, 'Design received for TSM Layout');
+  const tsmLayoutApproved = countNonEmpty(d3, 'TSM Approved On');
+  const tsmLayoutGroups = [['Layout Sent', tsmLayoutSent],['Layout Approved', tsmLayoutApproved],['Final TSM Verified', tsmVerified]];
+  const tlMax = Math.max(...tsmLayoutGroups.map(g=>g[1]),1);
+  document.getElementById('tsmLayoutBars').innerHTML = tsmLayoutGroups.map(([l,v],i)=>
+    sbarHTML(l, v, pct(v,tlMax), ['var(--bl)','var(--ac)','var(--gn)'][i])
+  ).join('');
+
+  const tsmTAT = d3.map(r=>tatDaysSimple(g(r,'Design received for TSM Layout'), g(r,'TSM Completed Date')));
+  tatBucketBars(tsmTAT, 'tsmTatBars');
+
+  // ---- BOTTLENECK SUMMARY ----
+  const avgDraw = avgOf(drawTAT), avgQhse = avgOf(qhseTAT), avgTsm = avgOf(tsmTAT);
+  const stages = [
+    {l:'3D Drawing', v:avgDraw, c:'var(--pr)'},
+    {l:'QHSE', v:avgQhse, c:'var(--gn)'},
+    {l:'TSM', v:avgTsm, c:'var(--cy)'}
+  ];
+  const slowest = stages.filter(s=>s.v!=null).sort((a,b)=>b.v-a.v)[0];
+  document.getElementById('d3BottleneckSummary').innerHTML = stages.map(s=>{
+    const isSlowest = slowest && s.l===slowest.l;
+    return `<div class="sb" style="border-left:3px solid ${s.c};${isSlowest?'outline:1px dashed '+s.c:''}">
+      <div class="sl" style="color:${s.c}">${s.l} Avg TAT${isSlowest?' ⚠ Slowest':''}</div>
+      <div class="sv" style="color:${s.c}">${s.v!=null?s.v.toFixed(1):'—'}</div>
+      <div class="sd">days average</div>
+    </div>`;
+  }).join('');
+
+  // ---- PER-PROJECT DETAIL TABLE ----
+  document.getElementById('d3DetailTable').innerHTML = d3.map(r=>{
+    const drawTatV = tatDaysSimple(g(r,'3D Design Start Time (DEV Audit Approval / Last Rejection)'), g(r,'3D Completed on'));
+    const qhseTatV = tatDaysSimple(g(r,'3D Approved on'), g(r,'QHSE Completed Date'));
+    const tsmTatV = tatDaysSimple(g(r,'Design received for TSM Layout'), g(r,'TSM Completed Date'));
+    const fmt = v => v==null ? '<span style="color:var(--tm)">—</span>' : v+'d';
+    const pillFor = (val) => {
+      if(!val) return '<span class="pill" style="background:var(--sf2);color:var(--tm)">—</span>';
+      if(val==='Approved'||val==='Completed') return '<span class="pill g">'+val+'</span>';
+      if(val==='Rejected') return '<span class="pill r">'+val+'</span>';
+      return '<span class="pill y">'+val+'</span>';
+    };
+    return `<tr>
+      <td style="font-weight:500">${g(r,'Project Name')||'—'}</td>
+      <td style="font-size:9px;color:var(--tm)">${(g(r,'Lead ID')||'').slice(0,20)}</td>
+      <td>${pillFor(g(r,'3D Completed on')?'Completed':'')}</td>
+      <td>${pillFor(g(r,'3D Design Sent to Client for Approval Status'))}</td>
+      <td>${fmt(drawTatV)}</td>
+      <td>${pillFor(g(r,'QHSE Status'))}</td>
+      <td>${fmt(qhseTatV)}</td>
+      <td>${pillFor(g(r,'TSM Verification Status'))}</td>
+      <td>${fmt(tsmTatV)}</td>
+    </tr>`;
+  }).join('');
 }
 
 // ===== AGING =====
