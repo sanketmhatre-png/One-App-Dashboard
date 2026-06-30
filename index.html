@@ -40,9 +40,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 .ct{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .ct .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .hb{margin-bottom:9px}
-.hb.clickable{cursor:pointer;padding:4px;border-radius:6px;transition:background 0.15s}
-.hb.clickable:hover{background:var(--sf2)}
-.hb.active-filter{background:var(--ag);border:1px dashed var(--ac)}
 .hb .hl{display:flex;justify-content:space-between;font-size:10px;margin-bottom:3px}
 .hb .hl span:first-child{color:var(--tx);font-weight:500}
 .hb .hl span:last-child{color:var(--tm)}
@@ -57,8 +54,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 .pill.g{background:var(--gd);color:var(--gn)}.pill.r{background:var(--rdd);color:var(--rd)}.pill.b{background:var(--bld);color:var(--bl)}.pill.y{background:var(--ag);color:var(--ac)}.pill.p{background:var(--prd);color:var(--pr)}.pill.pk{background:var(--pkd);color:var(--pk)}.pill.cy{background:var(--cyd);color:var(--cy)}
 .mt{width:100%;font-size:10px;border-collapse:collapse}
 .mt th{text-align:left;color:var(--tm);font-weight:500;padding:6px 7px;border-bottom:1px solid var(--bd);font-size:9px;text-transform:uppercase;letter-spacing:.3px;position:sticky;top:0;background:var(--sf)}
-.mt th.sortable{cursor:pointer;user-select:none;transition:color 0.15s, background-color 0.15s}
-.mt th.sortable:hover{color:var(--ac);background:var(--sf2)}
 .mt td{padding:6px 7px;border-bottom:1px solid var(--bd)}
 .mt tr:last-child td{border-bottom:none}
 .mt tr:hover td{background:var(--sf2)}
@@ -85,43 +80,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 @keyframes spin{to{transform:rotate(360deg)}}
 .share-note{background:var(--ag);border:1px solid rgba(245,158,11,.3);border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:11px;color:var(--ac);line-height:1.6;display:none}
 .share-note b{color:var(--tx)}
-
-/* Project Analysis styles */
-.pa-kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:20px}
-.pa-kpi{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:16px 14px;text-align:center;position:relative;overflow:hidden;transition:transform .15s,border-color .15s}
-.pa-kpi:hover{transform:translateY(-2px);border-color:var(--bl)}
-.pa-kpi .pa-val{font-family:'Space Grotesk',sans-serif;font-size:32px;font-weight:700;color:var(--bl);line-height:1.1}
-.pa-kpi .pa-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.7px;color:var(--tm);font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pa-kpi .pa-top{position:absolute;top:0;left:0;right:0;height:3px;background:var(--bl)}
-.pa-funnel-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:14px}
-.pa-funnel-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px}
-.pa-funnel-sub{font-size:11px;color:var(--tm);margin-bottom:18px}
-.pa-frow{display:flex;align-items:center;gap:12px;margin-bottom:8px}
-.pa-flbl{width:180px;font-size:12px;font-weight:600;text-align:right;flex-shrink:0;color:var(--tx)}
-.pa-fbar-wrap{flex:1;position:relative}
-.pa-fbar{height:36px;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:14px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;color:#fff;transition:width .8s ease}
-.pa-fpct{width:50px;font-size:11px;color:var(--tm);text-align:left;flex-shrink:0;margin-left:6px}
-
-/* Stage matrix table */
-.pa-matrix-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:20px;margin-bottom:14px}
-.pa-matrix-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:8px}
-.pa-matrix-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700}
-.pa-matrix-sub{font-size:11px;color:var(--tm);margin-top:2px}
-.pa-toggle{display:flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
-.pa-toggle-btn{padding:7px 16px;font-size:11px;font-weight:600;cursor:pointer;border:none;background:var(--sf2);color:var(--tm);font-family:Inter;transition:.15s}
-.pa-toggle-btn:hover{color:var(--tx)}
-.pa-toggle-btn.active{background:var(--bld);color:var(--bl)}
-.pa-mt{width:100%;font-size:11px;border-collapse:collapse}
-.pa-mt th{text-align:center;color:var(--tm);font-weight:600;padding:10px 8px;border-bottom:2px solid var(--bd);font-size:9px;text-transform:uppercase;letter-spacing:.5px;background:var(--sf)}
-.pa-mt th:first-child{text-align:left}
-.pa-mt td{padding:10px 8px;border-bottom:1px solid var(--bd);text-align:center;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:500}
-.pa-mt td:first-child{text-align:left;font-family:'Inter',sans-serif;font-weight:600;font-size:12px}
-.pa-mt tr:last-child td{border-bottom:none}
-.pa-mt tr:hover td{background:var(--sf2)}
-.pa-mt tr.total-row td{border-top:2px solid var(--bl);background:rgba(59,130,246,.06);font-weight:700;color:var(--bl);font-size:14px}
-.pa-mt tr.total-row td:first-child{color:var(--bl)}
-
-@media(max-width:768px){.g2,.g3,.g21{grid-template-columns:1fr}.pipe{flex-wrap:wrap}.ps{min-width:65px}.kr{grid-template-columns:repeat(2,1fr)}.fnl-lbl{width:80px;font-size:9px}.pa-kpi-grid{grid-template-columns:repeat(2,1fr)}.pa-flbl{width:100px;font-size:10px}.pa-fbar{height:28px;font-size:12px}}
+@media(max-width:768px){.g2,.g3,.g21{grid-template-columns:1fr}.pipe{flex-wrap:wrap}.ps{min-width:65px}.kr{grid-template-columns:repeat(2,1fr)}.fnl-lbl{width:80px;font-size:9px}}
 </style>
 </head>
 <body>
@@ -137,6 +96,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 
 <div class="share-note" id="shareNote">
   ⚠️ <b>Sheet not accessible.</b> Please share your Google Sheet as <b>"Anyone with the link → Viewer"</b> for live data to work.
+  Go to your sheet → Click <b>Share</b> → Under General access, select <b>"Anyone with the link"</b> → Set role to <b>Viewer</b> → Done.
 </div>
 
 <div class="tabs">
@@ -144,11 +104,10 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
   <div class="tab" onclick="T(1)">DEV Tracker</div>
   <div class="tab" onclick="T(2)">3D Design</div>
   <div class="tab" onclick="T(3)">HOTO 1 & 2</div>
-  <div class="tab" onclick="T(4)">Project Aging</div>
-  <div class="tab" onclick="T(5)">Project Mapping</div>
-  <div class="tab" onclick="T(6)">All Projects</div>
-  <div class="tab" onclick="T(7)">Project Analysis</div>
-  <div class="tab" onclick="T(8)">TAT Analysis</div>
+  <div class="tab" onclick="T(4)">Design Approval</div>
+  <div class="tab" onclick="T(5)">Project Aging</div>
+  <div class="tab" onclick="T(6)">Project Mapping</div>
+  <div class="tab" onclick="T(7)">All Projects</div>
 </div>
 
 <div id="loadingState" class="loading-overlay">
@@ -158,6 +117,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
 
 <div id="dashContent" style="display:none">
 
+<!-- TAB 0: OVERVIEW -->
 <div class="pn on" id="t0">
   <div class="kr" id="kpiRow"></div>
   <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Project Pipeline (HOTO 1 as Master)</div><div class="pipe" id="pipeline"></div></div>
@@ -168,6 +128,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
   <div id="keyStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
 </div>
 
+<!-- TAB 1: DEV TRACKER -->
 <div class="pn" id="t1">
   <div class="kr" id="devKpis"></div>
   <div class="g21">
@@ -179,11 +140,13 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
   </div>
 </div>
 
+<!-- TAB 2: 3D DESIGN -->
 <div class="pn" id="t2">
   <div class="kr" id="d3Kpis"></div>
   <div class="cd"><div class="ct"><div class="dot" style="background:var(--pr)"></div>3D Design Pipeline Progress</div><div id="d3Bars"></div></div>
 </div>
 
+<!-- TAB 3: HOTO 1 & 2 -->
 <div class="pn" id="t3">
   <div class="kr" id="hotoKpis"></div>
   <div class="g2">
@@ -192,32 +155,28 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
   </div>
 </div>
 
+<!-- TAB 4: DESIGN APPROVAL -->
 <div class="pn" id="t4">
+  <div class="kr" id="apprKpis"></div>
+  <div class="cd"><div class="ct"><div class="dot" style="background:var(--gn)"></div>Approval Pipeline</div><div id="apprBars"></div></div>
+</div>
+
+<!-- TAB 5: PROJECT AGING -->
+<div class="pn" id="t5">
   <div class="kr" id="agingKpis"></div>
   <div class="g2">
-    <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Projects per Stage (Click bar to cross-filter)</div><div id="stageBars"></div></div>
+    <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Projects per Stage</div><div id="stageBars"></div></div>
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--rd)"></div>Aging Distribution</div><div id="agingDistBars"></div></div>
   </div>
   <div class="cd">
     <div class="ct"><div class="dot" style="background:var(--ac)"></div>Project Stage & Aging — All Projects</div>
     <div class="filter-row" id="stageFilterRow"></div>
-    <div class="scr" style="max-height:600px">
-      <table class="mt" id="agingMasterTable">
-        <thead><tr>
-          <th class="sortable" onclick="sortAgingTable('name')">Project <span id="sort_name"></span></th>
-          <th class="sortable" onclick="sortAgingTable('city')">City <span id="sort_city"></span></th>
-          <th class="sortable" onclick="sortAgingTable('stage')">Current Stage <span id="sort_stage"></span></th>
-          <th class="sortable" onclick="sortAgingTable('stageDate')">Stage Since <span id="sort_stageDate"></span></th>
-          <th class="sortable" onclick="sortAgingTable('days')">Days in Stage <span id="sort_days"></span></th>
-          <th class="sortable" onclick="sortAgingTable('cap')">kWp <span id="sort_cap"></span></th>
-        </tr></thead>
-        <tbody id="agingTable"></tbody>
-      </table>
-    </div>
+    <div class="scr" style="max-height:600px"><table class="mt"><thead><tr><th>Project</th><th>City</th><th>Current Stage</th><th>Stage Since</th><th>Days in Stage</th><th>kWp</th></tr></thead><tbody id="agingTable"></tbody></table></div>
   </div>
 </div>
 
-<div class="pn" id="t5">
+<!-- TAB 6: PROJECT MAPPING -->
+<div class="pn" id="t6">
   <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Cross-Sheet Funnel</div><div id="funnel"></div></div>
   <div class="g2">
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>Stage Conversion Rates</div><div id="convBars"></div></div>
@@ -230,698 +189,557 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif}
   </div>
 </div>
 
-<div class="pn" id="t6">
+<!-- TAB 7: ALL PROJECTS -->
+<div class="pn" id="t7">
   <div class="cd">
     <div class="ct"><div class="dot" style="background:var(--ac)"></div>All HOTO 1 Projects — <span id="projCount"></span> entries</div>
     <div class="scr"><table class="mt"><thead><tr><th>Lead ID</th><th>Project</th><th>City</th><th>Capacity</th><th>Category</th><th>MMS Type</th><th>HOTO 1 Status</th></tr></thead><tbody id="allProjTable"></tbody></table></div>
   </div>
 </div>
 
-<!-- TAB 7: PROJECT ANALYSIS -->
-<div class="pn" id="t7">
-  <div class="pa-kpi-grid" id="paKpis"></div>
-  <div class="pa-funnel-card">
-    <div class="pa-funnel-title">Overall Project Stage Conversion Funnel</div>
-    <div class="pa-funnel-sub">Total unique projects (present in HOTO 1) that have completed each milestone stage — DAX Verified</div>
-    <div id="paFunnel"></div>
-  </div>
-  <div class="pa-matrix-card">
-    <div class="pa-matrix-hdr">
-      <div>
-        <div class="pa-matrix-title">Stage wise completed project</div>
-        <div class="pa-matrix-sub">Total breakdown metrics mapped against original Power BI capacity dimensions</div>
-      </div>
-      <div class="pa-toggle">
-        <button class="pa-toggle-btn active" id="togCap" onclick="toggleMatrix('capacity')">Capacity Wise</button>
-        <button class="pa-toggle-btn" id="togCity" onclick="toggleMatrix('city')">City Wise</button>
-      </div>
-    </div>
-    <div class="scr"><table class="pa-mt" id="paMatrixTable"></table></div>
-  </div>
-  <div class="g2">
-    <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>Stage-to-Stage Drop-off</div><div id="paDropoff"></div></div>
-    <div class="cd"><div class="ct"><div class="dot" style="background:var(--gn)"></div>Completion Rate by Stage</div><div id="paCompRate"></div></div>
-  </div>
+</div><!-- dashContent -->
 </div>
-
-<!-- TAB 8: TAT ANALYSIS -->
-<div class="pn" id="t8">
-  <div class="pa-matrix-card">
-    <div class="pa-matrix-hdr">
-      <div>
-        <div class="pa-matrix-title">Stage TAT (Turnaround Time) Analysis</div>
-        <div class="pa-matrix-sub">Average days taken to complete each stage, for completed projects only</div>
-      </div>
-    </div>
-    <div class="kr" id="tatKpis" style="margin-bottom:14px"></div>
-    <div class="scr" style="max-height:600px">
-      <table class="mt" id="tatTable">
-        <thead><tr>
-          <th>Project</th><th>City</th>
-          <th>HOTO 1 TAT</th><th>DEV TAT</th><th>3D Design TAT</th><th>QHSE TAT</th><th>TSM TAT</th>
-        </tr></thead>
-        <tbody id="tatTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-</div></div>
 
 <script>
 const SHEET_ID = '1mqFfGB8ZzEAitV48Asl_CAEdjpUViKr62s2rObCG30E';
-const SHEETS = ['DEV Request', 'DEV Task', '3D Process', 'HOTO 1', 'HOTO 2', 'Approval'];
+const SHEETS = ['DEV Request', 'DEV Task', '3D Process', 'HOTO 1', 'HOTO 2', 'Approval', 'HOTO'];
 let DATA = {};
-
-let currentAgingFilter = 'all';
-let currentStageCrossFilter = null;
-let currentSortKey = 'days';
-let currentSortAsc = false;
-let currentMatrixMode = 'capacity';
-
-const stageColorMap = {
-  '1 HOTO 1 Stage':'var(--ac)','2 DEV Stage':'var(--bl)','2.5 DEV Approve Stage':'var(--pr)',
-  '2.7 3D Design Stage':'var(--cy)','3 QHSE Stage':'var(--gn)','4 TSM Layout Stage':'var(--pk)',
-  '4.5 TSM Stage':'var(--rd)','5 Design Stage':'var(--ac)','6 Finance Approval':'var(--bl)',
-  '7 Anshuman Approval':'var(--pr)','8 CX Approval':'var(--cy)','9 HOTO 2 Stage':'var(--gn)',
-  '✓ HOTO 2 Completed':'var(--gn)'
-};
 
 function T(n){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.getElementById('t'+n).classList.add('on');document.querySelectorAll('.tab')[n].classList.add('on')}
 
-function fetchSheet(name){
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
-  return fetch(url).then(r=>{if(!r.ok)throw new Error(r.status);return r.text()}).then(csv=>{const p=Papa.parse(csv,{header:true,skipEmptyLines:true});return{name,data:p.data,fields:p.meta.fields}});
+function fetchSheet(name) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+  return fetch(url)
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(csv => {
+      const parsed = Papa.parse(csv, { header: true, skipEmptyLines: true });
+      return { name, data: parsed.data, fields: parsed.meta.fields };
+    });
 }
 
-function fetchAll(){
-  const st=document.getElementById('status');
-  st.className='lv loading';st.textContent='● Fetching...';
-  document.getElementById('shareNote').style.display='none';
-  Promise.all(SHEETS.map(fetchSheet)).then(results=>{
-    results.forEach(r=>DATA[r.name]=r.data);
-    st.className='lv';st.style.background='var(--gd)';st.style.color='var(--gn)';st.textContent='● Live';
-    document.getElementById('lastUpdate').textContent='Updated: '+new Date().toLocaleTimeString();
-    document.getElementById('loadingState').style.display='none';
-    document.getElementById('dashContent').style.display='block';
-    renderDashboard();
-  }).catch(err=>{
-    console.error(err);st.className='lv err';st.textContent='● Error';
-    document.getElementById('shareNote').style.display='block';
-    document.getElementById('loadingState').innerHTML=`<div style="color:var(--rd);font-size:13px">Could not load data. Make sure the Google Sheet is shared as <b>"Anyone with the link"</b>.</div>`;
+function fetchAll() {
+  const st = document.getElementById('status');
+  st.className = 'lv loading'; st.textContent = '● Fetching...';
+  document.getElementById('shareNote').style.display = 'none';
+
+  Promise.all(SHEETS.map(fetchSheet))
+    .then(results => {
+      results.forEach(r => DATA[r.name] = r.data);
+      st.className = 'lv'; st.style.background = 'var(--gd)'; st.style.color = 'var(--gn)';
+      st.textContent = '● Live';
+      document.getElementById('lastUpdate').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('dashContent').style.display = 'block';
+      renderDashboard();
+    })
+    .catch(err => {
+      console.error(err);
+      st.className = 'lv err'; st.textContent = '● Error';
+      document.getElementById('shareNote').style.display = 'block';
+      document.getElementById('loadingState').innerHTML = `<div style="color:var(--rd);font-size:13px">Could not load data. Make sure the Google Sheet is shared as <b>"Anyone with the link"</b>.</div>`;
+    });
+}
+
+// Helpers — case-insensitive field getter
+function g(row, key) {
+  if(row[key] !== undefined) return (row[key]||'').trim();
+  const lk = key.toLowerCase();
+  for(const k in row) { if(k.toLowerCase()===lk) return (row[k]||'').trim(); }
+  // partial match
+  for(const k in row) { if(k.toLowerCase().includes(lk)) return (row[k]||'').trim(); }
+  return '';
+}
+function count(arr, key, val) { return arr.filter(r => g(r,key).toLowerCase() === val.toLowerCase()).length; }
+function countNonEmpty(arr, key) { return arr.filter(r => g(r,key)).length; }
+function groupCount(arr, key) {
+  const m = {};
+  arr.forEach(r => { const v = g(r,key); if(v) m[v] = (m[v]||0)+1; });
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]);
+}
+function num(v) { const n = parseFloat((v||'').toString().replace(/[^0-9.-]/g,'')); return isNaN(n)?0:n; }
+function pct(a,b) { return b?Math.round(a/b*100):0; }
+function kpiHTML(color, label, value, detail) {
+  return `<div class="k"><div class="tp" style="background:${color}"></div><div class="l">${label}</div><div class="v" style="color:${color}">${value}</div><div class="dt">${detail}</div></div>`;
+}
+function barHTML(label, val, total, color) {
+  return `<div class="hb"><div class="hl"><span>${label}</span><span>${val} / ${total}</span></div><div class="ht"><div class="hf" style="width:${pct(val,total)}%;background:${color}"></div></div></div>`;
+}
+function sbarHTML(label, valStr, pctVal, color) {
+  return `<div class="hb"><div class="hl"><span>${label}</span><span>${valStr}</span></div><div class="ht"><div class="hf" style="width:${pctVal}%;background:${color}"></div></div></div>`;
+}
+
+function renderDashboard() {
+  const devReq = DATA['DEV Request'] || [];
+  const devTask = DATA['DEV Task'] || [];
+  const d3 = DATA['3D Process'] || [];
+  const hoto1 = DATA['HOTO 1'] || [];
+  const hoto2 = DATA['HOTO 2'] || [];
+  const approval = DATA['Approval'] || [];
+
+  const totalProjects = hoto1.length;
+  const devReqCount = devReq.length;
+
+  // HOTO 1 derived
+  const h1LeadIds = new Set(hoto1.map(r=>g(r,'Lead ID')).filter(Boolean));
+  const cities = groupCount(devReq, 'City');
+  const h1Cities = groupCount(hoto1, 'City');
+
+  // Capacity & Price from HOTO 1
+  const caps = hoto1.map(r=>num(g(r,'Project Size (Capacity)'))||num(g(r,'Project Size'))).filter(v=>v>0);
+  const prices = hoto1.map(r=>num(g(r,'Project price'))).filter(v=>v>0);
+  const totalCap = caps.reduce((a,b)=>a+b,0);
+  const avgCap = caps.length ? totalCap/caps.length : 0;
+  const avgPrice = prices.length ? prices.reduce((a,b)=>a+b,0)/prices.length : 0;
+
+  // DEV Task counts
+  const devCompleted = devTask.length;
+  const devApproved = devTask.filter(r=>g(r,'Audit Status')==='Approved').length;
+  const devRejected = devTask.filter(r=>g(r,'Audit Status')==='Rejected').length;
+  const engineers = groupCount(devReq, 'DEV Name');
+
+  // Cross-map Lead IDs
+  const devReqIds = new Set(devReq.map(r=>g(r,'Lead ID')).filter(Boolean));
+  const devTaskIds = new Set(devTask.map(r=>g(r,'Lead ID')).filter(Boolean));
+  const d3Ids = new Set(d3.map(r=>g(r,'Lead ID')).filter(Boolean));
+  const h2Ids = new Set(hoto2.map(r=>g(r,'Lead ID')).filter(Boolean));
+  const apprIds = new Set(approval.map(r=>g(r,'Lead ID')).filter(Boolean));
+
+  // HOTO status
+  const h1Completed = hoto1.filter(r=>g(r,'HOTO 1 Status')==='Completed').length;
+
+  // HOTO 2 done — find the right column
+  const h2Fields = Object.keys(hoto2[0]||{});
+  const h2CompletedField = h2Fields.find(k=>k.toLowerCase().includes('hoto 2 completed'));
+  const h2Done = h2CompletedField ? hoto2.filter(r=>(r[h2CompletedField]||'').trim()).length : 0;
+
+  // Stage counts
+  let stDevReq=0, stDevTask=0, st3D=0, stAppr=0, stH2=0;
+  hoto1.forEach(r=>{
+    const lid = g(r,'Lead ID');
+    if(devReqIds.has(lid)) stDevReq++;
+    if(devTaskIds.has(lid)) stDevTask++;
+    if(d3Ids.has(lid)) st3D++;
+    if(apprIds.has(lid)) stAppr++;
+    if(h2Ids.has(lid)) stH2++;
   });
-}
 
-function g(row,key){
-  if(!row)return '';if(row[key]!==undefined)return(row[key]||'').trim();
-  const lk=key.toLowerCase();for(const k in row){if(k.toLowerCase()===lk)return(row[k]||'').trim()}
-  for(const k in row){if(k.toLowerCase().includes(lk))return(row[k]||'').trim()}return '';
-}
-function count(arr,key,val){return arr.filter(r=>g(r,key).toLowerCase()===val.toLowerCase()).length}
-function countNonEmpty(arr,key){return arr.filter(r=>g(r,key)).length}
-function groupCount(arr,key){const m={};arr.forEach(r=>{const v=g(r,key);if(v)m[v]=(m[v]||0)+1});return Object.entries(m).sort((a,b)=>b[1]-a[1])}
-function num(v){const n=parseFloat((v||'').toString().replace(/[^0-9.-]/g,''));return isNaN(n)?0:n}
-function pct(a,b){return b?Math.round(a/b*100):0}
-function kpiHTML(color,label,value,detail){return `<div class="k"><div class="tp" style="background:${color}"></div><div class="l">${label}</div><div class="v" style="color:${color}">${value}</div><div class="dt">${detail}</div></div>`}
-function barHTML(label,val,total,color){return `<div class="hb"><div class="hl"><span>${label}</span><span>${val} / ${total}</span></div><div class="ht"><div class="hf" style="width:${pct(val,total)}%;background:${color}"></div></div></div>`}
-function sbarHTML(label,valStr,pctVal,color){return `<div class="hb"><div class="hl"><span>${label}</span><span>${valStr}</span></div><div class="ht"><div class="hf" style="width:${pctVal}%;background:${color}"></div></div></div>`}
-function clickableStageBarHTML(id,label,valStr,pctVal,color){const ac=currentStageCrossFilter===id?' active-filter':'';return `<div class="hb clickable${ac}" onclick="toggleStageCrossFilter('${id}')"><div class="hl"><span>${label}</span><span>${valStr}</span></div><div class="ht"><div class="hf" style="width:${pctVal}%;background:${color}"></div></div></div>`}
+  // Monthly trend from DEV Request
+  const monthlyMap = {};
+  devReq.forEach(r=>{
+    const ts = g(r,'Timestamp');
+    let m = ts.match(/(\d{1,2})-([A-Za-z]+)-(\d{4})/);
+    if(m){ const k=m[2].slice(0,3)+' '+m[3].slice(2); monthlyMap[k]=(monthlyMap[k]||0)+1; }
+    else {
+      m = ts.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if(m){ const mn=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[1]]||''; const k=mn+' '+m[3].slice(2); if(mn) monthlyMap[k]=(monthlyMap[k]||0)+1; }
+    }
+  });
+  const monthOrder = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthly = Object.entries(monthlyMap).sort((a,b)=>{
+    const [am,ay]=a[0].split(' '), [bm,by]=b[0].split(' ');
+    return (ay+monthOrder.indexOf(am)) > (by+monthOrder.indexOf(bm)) ? 1 : -1;
+  });
 
-// Capacity bucket from DAX
-function capBucket(kw){
-  if(!kw||kw<=0) return null;
-  if(kw<=30) return 'Alpha';
-  if(kw<=100) return 'Beta';
-  if(kw<=200) return 'Gamma';
-  return 'Hulk';
-}
+  // ===== RENDER TAB 0: OVERVIEW =====
+  document.getElementById('kpiRow').innerHTML =
+    kpiHTML('var(--ac)','Total Projects',totalProjects,`Lead IDs from HOTO 1`) +
+    kpiHTML('var(--gn)','Total Capacity',totalCap.toFixed(0)+`<span style="font-size:12px;color:var(--tm)"> kWp</span>`,`Avg ${avgCap.toFixed(1)} kWp`) +
+    kpiHTML('var(--bl)','DEV Requests',devReqCount,`${pct(stDevReq,totalProjects)}% of HOTO 1 projects`) +
+    kpiHTML('var(--pr)','DEV Completed',devCompleted,`${pct(devApproved,devCompleted)}% audit approved`) +
+    kpiHTML('var(--cy)','Designs Approved',approval.length,`All processed`) +
+    kpiHTML('var(--pk)','HOTO 2 Done',h2Done,`${pct(h2Done,totalProjects)}% of ${totalProjects}`);
 
-function renderDashboard(){
-  const devReq=DATA['DEV Request']||[];const devTask=DATA['DEV Task']||[];const d3=DATA['3D Process']||[];
-  const hoto1=DATA['HOTO 1']||[];const hoto2=DATA['HOTO 2']||[];
-
-  const totalProjects=hoto1.length;const devReqCount=devReq.length;
-  const cities=groupCount(devReq,'City');const h1Cities=groupCount(hoto1,'City');
-  const caps=hoto1.map(r=>num(g(r,'Project Size (Capacity)'))||num(g(r,'Project Size'))).filter(v=>v>0);
-  const prices=hoto1.map(r=>num(g(r,'Project price'))).filter(v=>v>0);
-  const totalCap=caps.reduce((a,b)=>a+b,0);const avgCap=caps.length?totalCap/caps.length:0;
-  const avgPrice=prices.length?prices.reduce((a,b)=>a+b,0)/prices.length:0;
-
-  const devCompleted=devTask.length;
-  const devApproved=devTask.filter(r=>g(r,'Audit Status')==='Approved').length;
-  const devRejected=devTask.filter(r=>g(r,'Audit Status')==='Rejected').length;
-  const engineers=groupCount(devReq,'DEV Name');
-
-  const devReqIds=new Set(devReq.map(r=>g(r,'Lead ID')).filter(Boolean));
-  const devTaskIds=new Set(devTask.map(r=>g(r,'Lead ID')).filter(Boolean));
-  const d3Ids=new Set(d3.map(r=>g(r,'Lead ID')).filter(Boolean));
-  const h2Ids=new Set(hoto2.map(r=>g(r,'Lead ID')).filter(Boolean));
-
-  const h1Completed=hoto1.filter(r=>g(r,'HOTO 1 Status')==='Completed').length;
-  const h2Fields=Object.keys(hoto2[0]||{});
-  const h2CompletedField=h2Fields.find(k=>k.toLowerCase().includes('hoto 2 completed'));
-  const h2Done=h2CompletedField?hoto2.filter(r=>(r[h2CompletedField]||'').trim()).length:0;
-
-  let stDevReq=0,stDevTask=0,st3D=0,stH2=0;
-  hoto1.forEach(r=>{const lid=g(r,'Lead ID');if(devReqIds.has(lid))stDevReq++;if(devTaskIds.has(lid))stDevTask++;if(d3Ids.has(lid))st3D++;if(h2Ids.has(lid))stH2++});
-
-  const monthlyMap={};
-  devReq.forEach(r=>{const ts=g(r,'Timestamp');let m=ts.match(/(\d{1,2})-([A-Za-z]+)-(\d{4})/);if(m){const k=m[2].slice(0,3)+' '+m[3].slice(2);monthlyMap[k]=(monthlyMap[k]||0)+1}else{m=ts.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m){const mn=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m[1]]||'';const k=mn+' '+m[3].slice(2);if(mn)monthlyMap[k]=(monthlyMap[k]||0)+1}}});
-  const monthOrder=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthly=Object.entries(monthlyMap).sort((a,b)=>{const[am,ay]=a[0].split(' '),[bm,by]=b[0].split(' ');return(ay+monthOrder.indexOf(am))>(by+monthOrder.indexOf(bm))?1:-1});
-  const colors=['var(--bl)','var(--cy)','var(--pr)','var(--ac)','var(--gn)','var(--pk)','var(--tm)'];
-
-  // TAB 0
-  document.getElementById('kpiRow').innerHTML=
-    kpiHTML('var(--ac)','Total Projects',totalProjects,'Master Count from HOTO 1')+
-    kpiHTML('var(--gn)','Total Capacity',totalCap.toFixed(0)+'<span style="font-size:12px;color:var(--tm)"> kWp</span>','Avg '+avgCap.toFixed(1)+' kWp')+
-    kpiHTML('var(--bl)','DEV Requests',devReqCount,pct(stDevReq,totalProjects)+'% of HOTO 1 projects')+
-    kpiHTML('var(--pr)','DEV Completed',devCompleted,pct(devApproved,devCompleted)+'% audit approved')+
-    kpiHTML('var(--cy)','Designs Tracked',d3.length,'In 3D Process')+
-    kpiHTML('var(--pk)','HOTO 2 Done',h2Done,pct(h2Done,totalProjects)+'% of '+totalProjects);
-
-  document.getElementById('pipeline').innerHTML=
-    `<div class="ps" style="background:var(--ag)"><div class="pv" style="color:var(--ac)">${totalProjects}</div><div class="pl" style="color:var(--ac)">HOTO 1</div></div>`+
-    `<div class="ps" style="background:var(--bld)"><div class="pv" style="color:var(--bl)">${stDevReq}</div><div class="pl" style="color:var(--bl)">DEV Req</div></div>`+
-    `<div class="ps" style="background:var(--prd)"><div class="pv" style="color:var(--pr)">${stDevTask}</div><div class="pl" style="color:var(--pr)">DEV Done</div></div>`+
-    `<div class="ps" style="background:var(--cyd)"><div class="pv" style="color:var(--cy)">${st3D}</div><div class="pl" style="color:var(--cy)">3D Design</div></div>`+
-    `<div class="ps" style="background:var(--gd)"><div class="pv" style="color:var(--gn)">${stH2}</div><div class="pl" style="color:var(--gn)">HOTO 2 Sched</div></div>`+
+  document.getElementById('pipeline').innerHTML =
+    `<div class="ps" style="background:var(--ag)"><div class="pv" style="color:var(--ac)">${totalProjects}</div><div class="pl" style="color:var(--ac)">HOTO 1</div></div>` +
+    `<div class="ps" style="background:var(--bld)"><div class="pv" style="color:var(--bl)">${stDevReq}</div><div class="pl" style="color:var(--bl)">DEV Req</div></div>` +
+    `<div class="ps" style="background:var(--prd)"><div class="pv" style="color:var(--pr)">${stDevTask}</div><div class="pl" style="color:var(--pr)">DEV Done</div></div>` +
+    `<div class="ps" style="background:var(--cyd)"><div class="pv" style="color:var(--cy)">${st3D}</div><div class="pl" style="color:var(--cy)">3D Design</div></div>` +
+    `<div class="ps" style="background:var(--gd)"><div class="pv" style="color:var(--gn)">${stH2}</div><div class="pl" style="color:var(--gn)">HOTO 2 Sched</div></div>` +
     `<div class="ps" style="background:var(--pkd)"><div class="pv" style="color:var(--pk)">${h2Done}</div><div class="pl" style="color:var(--pk)">HOTO 2 Done</div></div>`;
 
-  const mEl=document.getElementById('monthlyChart');const mMax=Math.max(...monthly.map(m=>m[1]),1);
-  mEl.innerHTML=monthly.slice(-8).map((m,i)=>`<div class="vw"><div class="vv">${m[1]}</div><div class="vb" style="height:${(m[1]/mMax)*100}%;background:${i%2?'#fbbf24':'#f59e0b'}"></div><div class="vl">${m[0]}</div></div>`).join('');
+  // Monthly chart
+  const mEl = document.getElementById('monthlyChart');
+  const mMax = Math.max(...monthly.map(m=>m[1]),1);
+  mEl.innerHTML = monthly.slice(-8).map((m,i)=>
+    `<div class="vw"><div class="vv">${m[1]}</div><div class="vb" style="height:${(m[1]/mMax)*100}%;background:${i%2?'#fbbf24':'#f59e0b'}"></div><div class="vl">${m[0]}</div></div>`
+  ).join('');
 
-  const cEl=document.getElementById('cityBars');const cMax=cities[0]?cities[0][1]:1;
-  cEl.innerHTML=cities.slice(0,8).map((c,i)=>sbarHTML(c[0],c[1],pct(c[1],cMax),colors[i%colors.length])).join('');
+  // City bars
+  const cEl = document.getElementById('cityBars');
+  const cMax = cities[0]?cities[0][1]:1;
+  const colors = ['var(--bl)','var(--cy)','var(--pr)','var(--ac)','var(--gn)','var(--pk)','var(--tm)'];
+  cEl.innerHTML = cities.slice(0,8).map((c,i)=>
+    sbarHTML(c[0], c[1], pct(c[1],cMax), colors[i%colors.length])
+  ).join('');
 
-  const penetrative=hoto1.filter(r=>g(r,'Project category').toLowerCase().includes('penetrative')).length;
-  const prefab=hoto1.filter(r=>g(r,'MMS type').toLowerCase().includes('pre-fab')).length;
-  document.getElementById('keyStats').innerHTML=
-    `<div class="sb" style="border-left:3px solid var(--ac)"><div class="sl" style="color:var(--ac)">Penetrative</div><div class="sv" style="color:var(--ac)">${pct(penetrative,totalProjects)}%</div><div class="sd">${penetrative} of ${totalProjects}</div></div>`+
-    `<div class="sb" style="border-left:3px solid var(--bl)"><div class="sl" style="color:var(--bl)">Pre-fab MMS</div><div class="sv" style="color:var(--bl)">${pct(prefab,totalProjects)}%</div><div class="sd">${prefab} of ${totalProjects}</div></div>`+
-    `<div class="sb" style="border-left:3px solid var(--gn)"><div class="sl" style="color:var(--gn)">Avg Price</div><div class="sv" style="color:var(--gn)">₹${avgPrice.toFixed(1)}</div><div class="sd">per Wp</div></div>`+
-    `<div class="sb" style="border-left:3px solid var(--pr)"><div class="sl" style="color:var(--pr)">HOTO 1 Done</div><div class="sv" style="color:var(--pr)">${pct(h1Completed,totalProjects)}%</div><div class="sd">${h1Completed} of ${totalProjects}</div></div>`+
+  // Key stats
+  const penetrative = hoto1.filter(r=>g(r,'Project category').toLowerCase().includes('penetrative')).length;
+  const prefab = hoto1.filter(r=>g(r,'MMS type').toLowerCase().includes('pre-fab')).length;
+  document.getElementById('keyStats').innerHTML =
+    `<div class="sb" style="border-left:3px solid var(--ac)"><div class="sl" style="color:var(--ac)">Penetrative</div><div class="sv" style="color:var(--ac)">${pct(penetrative,totalProjects)}%</div><div class="sd">${penetrative} of ${totalProjects}</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--bl)"><div class="sl" style="color:var(--bl)">Pre-fab MMS</div><div class="sv" style="color:var(--bl)">${pct(prefab,totalProjects)}%</div><div class="sd">${prefab} of ${totalProjects}</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--gn)"><div class="sl" style="color:var(--gn)">Avg Price</div><div class="sv" style="color:var(--gn)">₹${avgPrice.toFixed(1)}</div><div class="sd">per Wp</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--pr)"><div class="sl" style="color:var(--pr)">HOTO 1 Done</div><div class="sv" style="color:var(--pr)">${pct(h1Completed,totalProjects)}%</div><div class="sd">${h1Completed} of ${totalProjects}</div></div>` +
     `<div class="sb" style="border-left:3px solid var(--pk)"><div class="sl" style="color:var(--pk)">Avg Capacity</div><div class="sv" style="color:var(--pk)">${avgCap.toFixed(1)}</div><div class="sd">kWp per project</div></div>`;
 
-  // TAB 1
-  document.getElementById('devKpis').innerHTML=
-    kpiHTML('var(--bl)','DEV Requests',devReqCount,'Total submissions')+
-    kpiHTML('var(--gn)','DEV Completed',devCompleted,'Tracked in DEV Task')+
-    kpiHTML('var(--ac)','Audit Approved',devApproved,pct(devApproved,devCompleted)+'% approval rate')+
-    kpiHTML('var(--rd)','Audit Rejected',devRejected,pct(devRejected,devCompleted)+'% rejection');
+  // ===== TAB 1: DEV TRACKER =====
+  document.getElementById('devKpis').innerHTML =
+    kpiHTML('var(--bl)','DEV Requests',devReqCount,'Total submissions') +
+    kpiHTML('var(--gn)','DEV Completed',devCompleted,'Tracked in DEV Task') +
+    kpiHTML('var(--ac)','Audit Approved',devApproved,`${pct(devApproved,devCompleted)}% approval rate`) +
+    kpiHTML('var(--rd)','Audit Rejected',devRejected,`${pct(devRejected,devCompleted)}% rejection`);
 
-  const eEl=document.getElementById('engTable');const eMax=engineers[0]?engineers[0][1]:1;
-  eEl.innerHTML=engineers.map((e,i)=>`<tr><td style="font-weight:500">${e[0]}</td><td>${e[1]}</td><td><div style="background:var(--sf2);height:5px;border-radius:3px;width:90px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;border-radius:3px;width:${pct(e[1],eMax)}%;background:${colors[i%colors.length]}"></div></div></td></tr>`).join('');
+  const eEl = document.getElementById('engTable');
+  const eMax = engineers[0]?engineers[0][1]:1;
+  eEl.innerHTML = engineers.map((e,i)=>
+    `<tr><td style="font-weight:500">${e[0]}</td><td>${e[1]}</td><td><div style="background:var(--sf2);height:5px;border-radius:3px;width:90px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;border-radius:3px;width:${pct(e[1],eMax)}%;background:${colors[i%colors.length]}"></div></div></td></tr>`
+  ).join('');
 
-  const devTypes=groupCount(devReq,'DEV Type');const dtMax=devTypes[0]?devTypes[0][1]:1;
-  document.getElementById('devTypeBars').innerHTML=devTypes.map((d,i)=>sbarHTML(d[0],d[1],pct(d[1],dtMax),colors[i%colors.length])).join('');
+  const devTypes = groupCount(devReq, 'DEV Type');
+  const dtMax = devTypes[0]?devTypes[0][1]:1;
+  document.getElementById('devTypeBars').innerHTML = devTypes.map((d,i)=>sbarHTML(d[0],d[1],pct(d[1],dtMax),colors[i%colors.length])).join('');
 
-  // TAB 2
-  const d3Total=d3.length;const qhseAppr=d3.filter(r=>g(r,'QHSE Status')==='Approved').length;
-  const qhseRej=d3.filter(r=>g(r,'QHSE Status')==='Rejected').length;const tsmVerified=countNonEmpty(d3,'TSM Verification Status');
-  document.getElementById('d3Kpis').innerHTML=
-    kpiHTML('var(--pr)','3D Designs',d3Total,'Entries tracked')+kpiHTML('var(--gn)','QHSE Approved',qhseAppr,pct(qhseAppr,d3Total)+'%')+
-    kpiHTML('var(--rd)','QHSE Rejected',qhseRej,pct(qhseRej,d3Total)+'%')+kpiHTML('var(--cy)','TSM Verified',tsmVerified,pct(tsmVerified,d3Total)+'%');
-  document.getElementById('d3Bars').innerHTML=barHTML('QHSE Approved',qhseAppr,d3Total,'var(--gn)')+barHTML('QHSE Rejected',qhseRej,d3Total,'var(--rd)')+barHTML('TSM Verified',tsmVerified,d3Total,'var(--cy)');
+  // ===== TAB 2: 3D DESIGN =====
+  const d3Total = d3.length;
+  const qhseAppr = d3.filter(r=>g(r,'QHSE Status')==='Approved').length;
+  const qhseRej = d3.filter(r=>g(r,'QHSE Status')==='Rejected').length;
+  const tsmVerified = countNonEmpty(d3, 'TSM Verification Status');
+  const cxApproved = countNonEmpty(d3, 'Client');
 
-  // TAB 3
-  document.getElementById('hotoKpis').innerHTML=
-    kpiHTML('var(--ac)','HOTO 1 Projects',totalProjects,'Master project list')+kpiHTML('var(--gn)','HOTO 1 Done',h1Completed,pct(h1Completed,totalProjects)+'%')+
-    kpiHTML('var(--pk)','HOTO 2 Total',hoto2.length,'Entries tracked')+kpiHTML('var(--cy)','HOTO 2 Done',h2Done,pct(h2Done,hoto2.length)+'%');
-  const hcMax=h1Cities[0]?h1Cities[0][1]:1;
-  document.getElementById('hotoCityBars').innerHTML=h1Cities.slice(0,8).map((c,i)=>sbarHTML(c[0],c[1],pct(c[1],hcMax),colors[i%colors.length])).join('');
-  const topCap=hoto1.filter(r=>num(g(r,'Project Size (Capacity)'))>0).sort((a,b)=>num(g(b,'Project Size (Capacity)'))-num(g(a,'Project Size (Capacity)'))).slice(0,10);
-  document.getElementById('topCapTable').innerHTML=topCap.map(r=>`<tr><td style="font-weight:500">${g(r,'Project name')}</td><td>${g(r,'City')}</td><td>${num(g(r,'Project Size (Capacity)')).toFixed(1)}</td><td>${num(g(r,'Project price')).toFixed(1)}</td></tr>`).join('');
+  document.getElementById('d3Kpis').innerHTML =
+    kpiHTML('var(--pr)','3D Designs',d3Total,'Entries tracked') +
+    kpiHTML('var(--gn)','QHSE Approved',qhseAppr,`${pct(qhseAppr,d3Total)}%`) +
+    kpiHTML('var(--rd)','QHSE Rejected',qhseRej,`${pct(qhseRej,d3Total)}%`) +
+    kpiHTML('var(--cy)','TSM Verified',tsmVerified,`${pct(tsmVerified,d3Total)}%`);
 
-  // TAB 5
-  document.getElementById('funnel').innerHTML=[
-    {l:'HOTO 1 (Master)',v:totalProjects,c:'var(--ac)',bg:'var(--ag)'},{l:'DEV Requested',v:stDevReq,c:'var(--bl)',bg:'var(--bld)'},
-    {l:'DEV Completed',v:stDevTask,c:'var(--pr)',bg:'var(--prd)'},{l:'3D Design',v:st3D,c:'var(--cy)',bg:'var(--cyd)'},
-    {l:'HOTO 2 Scheduled',v:stH2,c:'var(--gn)',bg:'var(--gd)'},{l:'HOTO 2 Done',v:h2Done,c:'var(--pk)',bg:'var(--pkd)'},
+  document.getElementById('d3Bars').innerHTML =
+    barHTML('QHSE Approved',qhseAppr,d3Total,'var(--gn)') +
+    barHTML('QHSE Rejected',qhseRej,d3Total,'var(--rd)') +
+    barHTML('TSM Verified',tsmVerified,d3Total,'var(--cy)');
+
+  // ===== TAB 3: HOTO =====
+  document.getElementById('hotoKpis').innerHTML =
+    kpiHTML('var(--ac)','HOTO 1 Projects',totalProjects,'Master project list') +
+    kpiHTML('var(--gn)','HOTO 1 Done',h1Completed,`${pct(h1Completed,totalProjects)}%`) +
+    kpiHTML('var(--pk)','HOTO 2 Total',hoto2.length,'Entries tracked') +
+    kpiHTML('var(--cy)','HOTO 2 Done',h2Done,`${pct(h2Done,hoto2.length)}%`);
+
+  const hcMax = h1Cities[0]?h1Cities[0][1]:1;
+  document.getElementById('hotoCityBars').innerHTML = h1Cities.slice(0,8).map((c,i)=>sbarHTML(c[0],c[1],pct(c[1],hcMax),colors[i%colors.length])).join('');
+
+  // Top projects by capacity
+  const topCap = hoto1.filter(r=>num(g(r,'Project Size (Capacity)'))>0)
+    .sort((a,b)=>num(g(b,'Project Size (Capacity)'))-num(g(a,'Project Size (Capacity)')))
+    .slice(0,10);
+  document.getElementById('topCapTable').innerHTML = topCap.map(r=>
+    `<tr><td style="font-weight:500">${g(r,'Project name')}</td><td>${g(r,'City')}</td><td>${num(g(r,'Project Size (Capacity)')).toFixed(1)}</td><td>${num(g(r,'Project price')).toFixed(1)}</td></tr>`
+  ).join('');
+
+  // ===== TAB 4: APPROVAL =====
+  const apprTotal = approval.length;
+  document.getElementById('apprKpis').innerHTML =
+    kpiHTML('var(--gn)','Total Designs',apprTotal,'All processed') +
+    kpiHTML('var(--gn)','Finance OK',apprTotal,'100%') +
+    kpiHTML('var(--gn)','Anshuman OK',apprTotal,'100%') +
+    kpiHTML('var(--gn)','ERP Synced',apprTotal,'All updated');
+
+  // Try to find approval-related columns dynamically
+  const apprFields = Object.keys(approval[0]||{});
+  const apprStatusFields = apprFields.filter(f=>f.toLowerCase().includes('status')||f.toLowerCase().includes('approval'));
+  document.getElementById('apprBars').innerHTML = apprStatusFields.slice(0,8).map((f,i)=>{
+    const done = approval.filter(r=>(r[f]||'').trim()).length;
+    return barHTML(f.slice(0,35),done,apprTotal,colors[i%colors.length]);
+  }).join('');
+
+  // ===== TAB 5: PROJECT MAPPING =====
+  document.getElementById('funnel').innerHTML = [
+    {l:'HOTO 1 (Master)',v:totalProjects,c:'var(--ac)',bg:'var(--ag)'},
+    {l:'DEV Requested',v:stDevReq,c:'var(--bl)',bg:'var(--bld)'},
+    {l:'DEV Completed',v:stDevTask,c:'var(--pr)',bg:'var(--prd)'},
+    {l:'3D Design',v:st3D,c:'var(--cy)',bg:'var(--cyd)'},
+    {l:'HOTO 2 Scheduled',v:stH2,c:'var(--gn)',bg:'var(--gd)'},
+    {l:'HOTO 2 Done',v:h2Done,c:'var(--pk)',bg:'var(--pkd)'},
   ].map(f=>`<div class="fnl-row"><div class="fnl-lbl" style="color:${f.c}">${f.l}</div><div class="fnl-bar" style="width:${pct(f.v,totalProjects)}%;background:${f.bg};color:${f.c}">${f.v}</div><div class="fnl-pct">${pct(f.v,totalProjects)}%</div></div>`).join('');
 
-  document.getElementById('convBars').innerHTML=
-    sbarHTML('HOTO 1 → DEV Req',pct(stDevReq,totalProjects)+'%',pct(stDevReq,totalProjects),'var(--bl)')+
-    sbarHTML('DEV Req → DEV Done',pct(stDevTask,stDevReq)+'%',pct(stDevTask,stDevReq),'var(--pr)')+
-    sbarHTML('DEV Done → 3D',pct(st3D,stDevTask)+'%',pct(st3D,stDevTask),'var(--cy)')+
+  // Conversion rates
+  document.getElementById('convBars').innerHTML =
+    sbarHTML('HOTO 1 → DEV Req',pct(stDevReq,totalProjects)+'%',pct(stDevReq,totalProjects),'var(--bl)') +
+    sbarHTML('DEV Req → DEV Done',pct(stDevTask,stDevReq)+'%',pct(stDevTask,stDevReq),'var(--pr)') +
+    sbarHTML('DEV Done → 3D',pct(st3D,stDevTask)+'%',pct(st3D,stDevTask),'var(--cy)') +
     sbarHTML('Overall → HOTO 2 Done',pct(h2Done,totalProjects)+'%',pct(h2Done,totalProjects),'var(--ac)');
 
-  const biggestDrop=[{l:'DEV → 3D',d:stDevTask-st3D},{l:'3D → HOTO2',d:st3D-stH2},{l:'HOTO2 Sched → Done',d:stH2-h2Done}].sort((a,b)=>b.d-a.d)[0];
-  document.getElementById('bottlenecks').innerHTML=
-    `<div class="sb" style="border-left:3px solid var(--rd);margin-bottom:8px"><div class="sl" style="color:var(--rd)">Biggest Drop-off</div><div class="sv" style="color:var(--rd)">${biggestDrop.l}</div><div class="sd">${biggestDrop.d} projects stuck</div></div>`+
-    `<div class="sb" style="border-left:3px solid var(--ac);margin-bottom:8px"><div class="sl" style="color:var(--ac)">HOTO 2 Backlog</div><div class="sv" style="color:var(--ac)">${totalProjects-stH2}</div><div class="sd">Projects without HOTO 2</div></div>`+
+  // Bottlenecks
+  const biggestDrop = [{l:'DEV → 3D',d:stDevTask-st3D},{l:'3D → HOTO2',d:st3D-stH2},{l:'HOTO2 Sched → Done',d:stH2-h2Done}].sort((a,b)=>b.d-a.d)[0];
+  document.getElementById('bottlenecks').innerHTML =
+    `<div class="sb" style="border-left:3px solid var(--rd);margin-bottom:8px"><div class="sl" style="color:var(--rd)">Biggest Drop-off</div><div class="sv" style="color:var(--rd)">${biggestDrop.l}</div><div class="sd">${biggestDrop.d} projects stuck</div></div>` +
+    `<div class="sb" style="border-left:3px solid var(--ac);margin-bottom:8px"><div class="sl" style="color:var(--ac)">HOTO 2 Backlog</div><div class="sv" style="color:var(--ac)">${totalProjects - stH2}</div><div class="sd">Projects without HOTO 2</div></div>` +
     `<div class="sb" style="border-left:3px solid var(--gn)"><div class="sl" style="color:var(--gn)">Completion Rate</div><div class="sv" style="color:var(--gn)">${pct(h2Done,totalProjects)}%</div><div class="sd">End-to-end</div></div>`;
 
-  const allCitiesSet=[...new Set(hoto1.map(r=>g(r,'City')).filter(Boolean))];
-  document.getElementById('filterRow').innerHTML=
-    `<div class="fbtn on" onclick="filterMap('all',this)">All (${totalProjects})</div>`+
+  // Map table + filters
+  const allCitiesSet = [...new Set(hoto1.map(r=>g(r,'City')).filter(Boolean))];
+  document.getElementById('filterRow').innerHTML =
+    `<div class="fbtn on" onclick="filterMap('all',this)">All (${totalProjects})</div>` +
     allCitiesSet.slice(0,6).map(c=>`<div class="fbtn" onclick="filterMap('${c}',this)">${c}</div>`).join('');
 
-  window._mapData=hoto1.map(r=>{const lid=g(r,'Lead ID');return{name:g(r,'Project name'),city:g(r,'City'),cap:num(g(r,'Project Size (Capacity)')),price:num(g(r,'Project price')),devReq:devReqIds.has(lid),devDone:devTaskIds.has(lid),has3d:d3Ids.has(lid),h2:h2Ids.has(lid),h1Status:g(r,'HOTO 1 Status')}});
-  filterMap('all',document.querySelector('.fbtn'));
-
-  // TAB 6
-  document.getElementById('projCount').textContent=totalProjects;
-  document.getElementById('allProjTable').innerHTML=hoto1.map(r=>`<tr><td style="font-size:9px;color:var(--tm)">${g(r,'Lead ID').slice(0,25)}</td><td style="font-weight:500">${g(r,'Project name')}</td><td>${g(r,'City')}</td><td>${num(g(r,'Project Size (Capacity)'))||'—'}</td><td>${g(r,'Project category')||'—'}</td><td>${g(r,'MMS type')||'—'}</td><td>${g(r,'HOTO 1 Status')==='Completed'?'<span class="pill g">Complete</span>':'<span class="pill y">Pending</span>'}</td></tr>`).join('');
-
-  renderAging();
-  renderProjectAnalysis();
-  renderTAT();
-}
-
-function filterMap(filter,el){
-  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));el.classList.add('on');
-  const tb=document.getElementById('mapTable');const dot=v=>v?'<span class="sdot yes">✓</span>':'<span class="sdot no">–</span>';
-  tb.innerHTML=window._mapData.filter(p=>filter==='all'||p.city===filter).map(p=>`<tr><td style="font-weight:500">${p.name}</td><td>${p.city}</td><td>${p.cap||'—'}</td><td>${p.price||'—'}</td><td>${dot(p.devDone)}</td><td>${dot(p.has3d)}</td><td>${p.h1Status==='Completed'?'<span class="sdot yes">✓</span>':'<span class="sdot no">–</span>'}</td><td>${dot(p.h2)}</td></tr>`).join('');
-}
-
-function parseD(v){if(!v)return null;const s=(v||'').toString().trim();if(!s)return null;let d=new Date(s);if(!isNaN(d))return d;const m1=s.match(/(\d{1,2})-([A-Za-z]+)-(\d{4})/);if(m1){d=new Date(`${m1[2]} ${m1[1]}, ${m1[3]}`);if(!isNaN(d))return d}return null}
-function maxD(rows,field){let mx=null;rows.forEach(r=>{const d=parseD(g(r,field));if(d&&(!mx||d>mx))mx=d});return mx}
-function daysBetween(d){if(!d)return null;return Math.floor((new Date()-d)/86400000)}
-
-function calculateProjectStages(){
-  const hoto1=DATA['HOTO 1']||[];const devTask=DATA['DEV Task']||[];const d3=DATA['3D Process']||[];
-  const approval=DATA['Approval']||[];const hoto2=DATA['HOTO 2']||[];
-  const projNames=[...new Set(hoto1.map(r=>g(r,'Project name')).filter(Boolean))];const results=[];
-
-  projNames.forEach(proj=>{
-    const h1Rows=hoto1.filter(r=>g(r,'Project name')===proj);
-    const dRows=devTask.filter(r=>g(r,'Project Name')===proj);
-    const d3Rows=d3.filter(r=>g(r,'Project Name')===proj);
-    const aRows=approval.filter(r=>g(r,'Lead name')===proj);
-    const h2Rows=hoto2.filter(r=>g(r,'Project name')===proj);
-
-    const h1CompDate=maxD(h1Rows,'HOTO 1 completed on');const devDate=maxD(dRows,'DEV Completed Timestamp');
-    const auditDate=maxD(dRows,'Audit Completed on');const d3ApprDate=maxD(d3Rows,'3D Approved on');
-    const qhseApprRows=d3Rows.filter(r=>g(r,'QHSE Status')==='Approved');const qhseDate=maxD(qhseApprRows,'QHSE Completed Date');
-    const tsmLayoutDate=maxD(d3Rows.filter(r=>g(r,'TSM Approved On')),'TSM Approved On');
-    const tsmApprRows=d3Rows.filter(r=>(g(r,'TSM Verification Status')||'').toUpperCase().trim()==='APPROVED');
-    const tsmDate=maxD(tsmApprRows,'TSM Completed Date');const designDate=maxD(d3Rows,'3D Design Admin Approval Timestamp');
-    const finApprRows=aRows.filter(r=>g(r,'Finance Team Approval Status')==='Approved');const finDate=maxD(finApprRows,'Finance Team Approved On');
-    const anshApprRows=aRows.filter(r=>g(r,'Anshuman Approval Status')==='Approved');const anshDate=maxD(anshApprRows,'Anshuman Approved On');
-    const cxApprRows=d3Rows.filter(r=>g(r,'3D Design Sent to Client for Approval Status')==='Approved');const cxDate=maxD(d3Rows,'3D Design Approval Timestamp');
-    const h2DoneRows=h2Rows.filter(r=>g(r,'All discussions completed?')==='YES');const h2Date=maxD(h2DoneRows,'HOTO 2 completed On');
-
-    const c_HOTO1=h1Rows.some(r=>g(r,'HOTO 1 completed ?')==='Completed');
-    const c_DEV=dRows.length>0&&!dRows.some(r=>!g(r,'DEV Completed Timestamp'));
-    const c_DEV_Approve=dRows.length>0&&!dRows.some(r=>!g(r,'Audit Completed on'));
-    const c_3DDesign=!!d3ApprDate;const c_QHSE=!!qhseDate;const c_TSM_Layout=!!tsmLayoutDate;const c_TSM=!!tsmDate;
-    const c_Design=d3Rows.length>0&&!d3Rows.some(r=>!g(r,'3D Design Admin Approval Timestamp'));
-    const totalLeads=aRows.filter(r=>g(r,'Lead name')).length;const c_Finance=totalLeads>0&&totalLeads===finApprRows.length;
-    const c_Anshuman=totalLeads>0&&totalLeads===anshApprRows.length;const c_CX=cxApprRows.length>0;const c_HOTO2=h2DoneRows.length>0;
-
-    let stage,stageDate;
-    if(!c_HOTO1){stage='1 HOTO 1 Stage';stageDate=h1CompDate}
-    else if(c_HOTO1&&!c_DEV){stage='2 DEV Stage';stageDate=h1CompDate}
-    else if(c_DEV&&!c_DEV_Approve){stage='2.5 DEV Approve Stage';stageDate=devDate}
-    else if(c_DEV_Approve&&!c_3DDesign){stage='2.7 3D Design Stage';stageDate=auditDate}
-    else if(c_3DDesign&&!c_QHSE){stage='3 QHSE Stage';stageDate=d3ApprDate}
-    else if(c_QHSE&&!c_TSM_Layout){stage='4 TSM Layout Stage';stageDate=qhseDate}
-    else if(c_TSM_Layout&&!c_TSM){stage='4.5 TSM Stage';stageDate=tsmLayoutDate}
-    else if(c_TSM&&!c_Design){stage='5 Design Stage';stageDate=tsmDate}
-    else if(c_Design&&!c_Finance){stage='6 Finance Approval';stageDate=designDate}
-    else if(c_Finance&&!c_Anshuman){stage='7 Anshuman Approval';stageDate=finDate}
-    else if(c_Anshuman&&!c_CX){stage='8 CX Approval';stageDate=anshDate}
-    else if(c_CX&&!c_HOTO2){stage='9 HOTO 2 Stage';stageDate=cxDate}
-    else if(c_HOTO2){stage='✓ HOTO 2 Completed';stageDate=h2Date}
-    else{stage='Unknown';stageDate=null}
-
-    const h1Match=h1Rows[0];const city=h1Match?g(h1Match,'City'):'';const cap=h1Match?num(g(h1Match,'Project Size (Capacity)')):0;
-    results.push({name:proj,city,cap,stage,stageDate,days:daysBetween(stageDate),completed:stage.startsWith('✓')});
+  window._mapData = hoto1.map(r=>{
+    const lid = g(r,'Lead ID');
+    return {
+      name:g(r,'Project name'),
+      city:g(r,'City'),
+      cap:num(g(r,'Project Size (Capacity)')),
+      price:num(g(r,'Project price')),
+      devReq:devReqIds.has(lid),
+      devDone:devTaskIds.has(lid),
+      has3d:d3Ids.has(lid),
+      h2:h2Ids.has(lid),
+      h1Status:g(r,'HOTO 1 Status')
+    };
   });
-  return results;
+  filterMap('all', document.querySelector('.fbtn'));
+
+  // ===== TAB 6: ALL PROJECTS =====
+  document.getElementById('projCount').textContent = totalProjects;
+  document.getElementById('allProjTable').innerHTML = hoto1.map(r=>
+    `<tr><td style="font-size:9px;color:var(--tm)">${g(r,'Lead ID').slice(0,25)}</td><td style="font-weight:500">${g(r,'Project name')}</td><td>${g(r,'City')}</td><td>${num(g(r,'Project Size (Capacity)'))||'—'}</td><td>${g(r,'Project category')||'—'}</td><td>${g(r,'MMS type')||'—'}</td><td>${g(r,'HOTO 1 Status')==='Completed'?'<span class="pill g">Complete</span>':'<span class="pill y">Pending</span>'}</td></tr>`
+  ).join('');
+
+  // === RENDER AGING TAB ===
+  renderAging();
 }
 
-// ===== TAB 7: PROJECT ANALYSIS =====
-function renderProjectAnalysis(){
-  const hoto1=DATA['HOTO 1']||[];const devTask=DATA['DEV Task']||[];const d3=DATA['3D Process']||[];
-  const approval=DATA['Approval']||[];const hoto2=DATA['HOTO 2']||[];
-
-  // Build HOTO 1 project name set & map (name→row) for pipeline filtering
-  const h1NameSet=new Set(hoto1.map(r=>g(r,'Project name')).filter(Boolean));
-  const h1Map={};hoto1.forEach(r=>{const n=g(r,'Project name');if(n)h1Map[n]=r});
-
-  // Total projects (HOTO 1 with non-blank City)
-  const hotoComplete=hoto1.filter(r=>{const c=g(r,'City');return c&&c!==''}).length;
-
-  // HOTO 1 Completed
-  const hoto1Completed=hoto1.filter(r=>{const s=g(r,'HOTO 1 Status').toLowerCase();return s==='completed'||s==='complete'}).length;
-
-  // DEV Completed — distinct Project Name where Audit=Approved AND project in HOTO 1
-  const devCompletedCount=new Set(devTask.filter(r=>g(r,'Audit Status')==='Approved'&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
-
-  // 3D Design — distinct Project Name where 3D Approved on not blank AND in HOTO 1
-  const d3CompletedCount=new Set(d3.filter(r=>g(r,'3D Approved on')!==''&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
-
-  // QHSE — distinct Project Name where QHSE Status=Approved AND in HOTO 1
-  const qhseCompletedCount=new Set(d3.filter(r=>g(r,'QHSE Status')==='Approved'&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
-
-  // TSM — distinct Project Name where TSM Verification Status=Approved AND in HOTO 1
-  const tsmCompletedCount=new Set(d3.filter(r=>(g(r,'TSM Verification Status')||'').trim().toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
-
-  // Finance — distinct Lead name where Finance Approved AND Lead name in HOTO 1
-  const financeCompletedCount=new Set(approval.filter(r=>g(r,'Finance Team Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name'))).map(r=>g(r,'Lead name')).filter(Boolean)).size;
-
-  // Anshuman — distinct Lead name where Anshuman Approved AND Lead name in HOTO 1
-  const anshumanCompletedCount=new Set(approval.filter(r=>g(r,'Anshuman Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name'))).map(r=>g(r,'Lead name')).filter(Boolean)).size;
-
-  // Client Approved — distinct Lead ID where 3D Design Sent to Client = Approved AND Project Name in HOTO 1
-  const clientApprovedCount=new Set(d3.filter(r=>(g(r,'3D Design Sent to Client for Approval Status')||'').trim()==='Approved'&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Lead ID')).filter(Boolean)).size;
-
-  // HOTO 2 Completed — distinct Lead ID where HOTO 2 Completed On not blank AND Project name in HOTO 1
-  const h2Fields=Object.keys(hoto2[0]||{});
-  const h2CompField=h2Fields.find(k=>k.toLowerCase().includes('hoto 2 completed on'))||'HOTO 2 Completed On';
-  const hoto2CompletedCount=new Set(hoto2.filter(r=>{const v=(r[h2CompField]||'').trim();const pn=g(r,'Project name');return v&&v!==''&&h1NameSet.has(pn)}).map(r=>g(r,'Lead ID')).filter(Boolean)).size;
-
-  // Store for matrix
-  window._paData={hoto1,devTask,d3,approval,hoto2,h1NameSet,h1Map,
-    counts:{hotoComplete,hoto1Completed,devCompletedCount,d3CompletedCount,qhseCompletedCount,tsmCompletedCount,financeCompletedCount,anshumanCompletedCount,clientApprovedCount,hoto2CompletedCount}};
-
-  // KPI cards
-  const kpis=[
-    {label:'Total Projects',value:hotoComplete},{label:'HOTO 1 Completed',value:hoto1Completed},
-    {label:'DEV Approved',value:devCompletedCount},{label:'3D Design Approved',value:d3CompletedCount},
-    {label:'QHSE Approved',value:qhseCompletedCount},{label:'TSM Verified',value:tsmCompletedCount},
-    {label:'Finance Approved',value:financeCompletedCount},{label:'Anshuman Approved',value:anshumanCompletedCount},
-    {label:'Client Approved',value:clientApprovedCount},{label:'HOTO 2 Completed',value:hoto2CompletedCount},
-  ];
-  document.getElementById('paKpis').innerHTML=kpis.map(k=>`<div class="pa-kpi"><div class="pa-top"></div><div class="pa-val">${k.value}</div><div class="pa-lbl">${k.label}</div></div>`).join('');
-
-  // Funnel
-  const funnelStages=[
-    {label:'HOTO 1 Complete',value:hoto1Completed,color:'#1e3a8a'},
-    {label:'DEV Completed Count',value:devCompletedCount,color:'#dc2626'},
-    {label:'3D Design Completed Count',value:d3CompletedCount,color:'#2563eb'},
-    {label:'QHSE Completed',value:qhseCompletedCount,color:'#f59e0b'},
-    {label:'TSM Completed',value:tsmCompletedCount,color:'#3b82f6'},
-    {label:'Finance Approved',value:financeCompletedCount,color:'#22c55e'},
-    {label:'Anshuman Approved',value:anshumanCompletedCount,color:'#06b6d4'},
-    {label:'Client Approved',value:clientApprovedCount,color:'#a855f7'},
-    {label:'HOTO 2 Completed',value:hoto2CompletedCount,color:'#ec4899'},
-  ];
-  const fMax=Math.max(...funnelStages.map(f=>f.value),1);
-  document.getElementById('paFunnel').innerHTML=funnelStages.map(f=>`<div class="pa-frow"><div class="pa-flbl">${f.label}</div><div class="pa-fbar-wrap"><div class="pa-fbar" style="width:${Math.max((f.value/fMax)*100,3)}%;background:${f.color}">${f.value}</div></div><div class="pa-fpct">${pct(f.value,hotoComplete)}%</div></div>`).join('');
-
-  // Drop-off
-  const dropoffs=[
-    {from:'HOTO 1 → DEV',lost:hoto1Completed-devCompletedCount},
-    {from:'DEV → 3D Design',lost:devCompletedCount-d3CompletedCount},
-    {from:'3D Design → QHSE',lost:d3CompletedCount-qhseCompletedCount},
-    {from:'QHSE → TSM',lost:qhseCompletedCount-tsmCompletedCount},
-    {from:'TSM → Finance',lost:tsmCompletedCount-financeCompletedCount},
-    {from:'Finance → Anshuman',lost:financeCompletedCount-anshumanCompletedCount},
-    {from:'Anshuman → Client',lost:anshumanCompletedCount-clientApprovedCount},
-    {from:'Client → HOTO 2',lost:clientApprovedCount-hoto2CompletedCount},
-  ];
-  const dMax=Math.max(...dropoffs.map(d=>Math.abs(d.lost)),1);
-  document.getElementById('paDropoff').innerHTML=dropoffs.map(d=>{
-    const abs=Math.abs(d.lost);const neg=d.lost<0;
-    const color=neg?'var(--gn)':d.lost===0?'var(--cy)':'var(--rd)';
-    const sign=neg?'+':d.lost===0?'':'-';
-    return sbarHTML(d.from,`${sign}${abs} projects`,pct(abs,dMax),color);
-  }).join('');
-
-  // Completion rate
-  document.getElementById('paCompRate').innerHTML=funnelStages.map(f=>{
-    const rate=pct(f.value,hotoComplete);return sbarHTML(f.label,rate+'%',rate,f.color);
-  }).join('');
-
-  // Matrix table
-  renderMatrix(currentMatrixMode);
+function filterMap(filter, el) {
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const tb = document.getElementById('mapTable');
+  const dot = (v) => v ? '<span class="sdot yes">✓</span>' : '<span class="sdot no">–</span>';
+  tb.innerHTML = window._mapData
+    .filter(p => filter==='all' || p.city===filter)
+    .map(p=>`<tr><td style="font-weight:500">${p.name}</td><td>${p.city}</td><td>${p.cap||'—'}</td><td>${p.price||'—'}</td><td>${dot(p.devDone)}</td><td>${dot(p.has3d)}</td><td>${p.h1Status==='Completed'?'<span class="sdot yes">✓</span>':'<span class="sdot no">–</span>'}</td><td>${dot(p.h2)}</td></tr>`)
+    .join('');
 }
 
-// ===== STAGE TAT (TURNAROUND TIME) ANALYSIS =====
-function tatDays(startStr, endStr){
-  const sd = parseD(startStr);
-  const ed = parseD(endStr);
-  if(!sd || !ed) return null;
-  const diff = Math.round((ed - sd) / 86400000);
-  return diff >= 0 ? diff : null;
+// === DATE HELPERS ===
+function parseD(v) {
+  if(!v) return null;
+  const s = (v||'').toString().trim();
+  if(!s) return null;
+  // Try multiple formats
+  let d = new Date(s);
+  if(!isNaN(d)) return d;
+  // dd-MMM-yyyy
+  const m1 = s.match(/(\d{1,2})-([A-Za-z]+)-(\d{4})/);
+  if(m1) { d = new Date(`${m1[2]} ${m1[1]}, ${m1[3]}`); if(!isNaN(d)) return d; }
+  return null;
 }
-function avgOf(arr){
-  const v = arr.filter(x=>x!=null);
-  if(!v.length) return null;
-  return v.reduce((a,b)=>a+b,0) / v.length;
+function maxD(rows, field) {
+  let mx = null;
+  rows.forEach(r => {
+    const d = parseD(g(r, field));
+    if(d && (!mx || d > mx)) mx = d;
+  });
+  return mx;
 }
-function tatKpiHTML(color, label, avgVal, count){
-  const display = avgVal==null ? '—' : avgVal.toFixed(1)+'<span style="font-size:12px;color:var(--tm)"> days</span>';
-  return `<div class="k"><div class="tp" style="background:${color}"></div><div class="l">${label}</div><div class="v" style="color:${color}">${display}</div><div class="dt">${count} projects measured</div></div>`;
+function daysBetween(d) {
+  if(!d) return null;
+  return Math.floor((new Date() - d) / 86400000);
 }
 
-function renderTAT(){
+// === STAGE CALCULATION (replicating Power BI DAX) ===
+function calculateProjectStages() {
+  const hotoSheet = DATA['HOTO'] || [];
   const hoto1 = DATA['HOTO 1'] || [];
   const devTask = DATA['DEV Task'] || [];
   const d3 = DATA['3D Process'] || [];
+  const approval = DATA['Approval'] || [];
+  const hoto2 = DATA['HOTO 2'] || [];
 
-  // Per-project (by Project Name) TAT rows
-  const rows = [];
+  // Get unique projects from HOTO sheet
+  const projNames = [...new Set(hotoSheet.map(r => g(r,'Project Name')).filter(Boolean))];
+  const results = [];
 
-  hoto1.forEach(h1 => {
-    const pn = g(h1,'Project name');
-    if(!pn) return;
-    const city = g(h1,'City');
+  projNames.forEach(proj => {
+    const hRows = hotoSheet.filter(r => g(r,'Project Name') === proj);
+    const h1Rows = hoto1.filter(r => g(r,'Project name') === proj);
+    const dRows = devTask.filter(r => g(r,'Project Name') === proj);
+    const d3Rows = d3.filter(r => g(r,'Project Name') === proj);
+    const aRows = approval.filter(r => g(r,'Lead name') === proj);
+    const h2Rows = hoto2.filter(r => g(r,'Project name') === proj);
 
-    // 1. HOTO 1 TAT: 'Approval Email Sent On' -> 'HOTO 1 completed on'
-    const hoto1TAT = tatDays(g(h1,'Approval Email Sent On'), g(h1,'HOTO 1 completed on'));
+    // --- DATES ---
+    const hotoDate = maxD(hRows, 'Timestamp');
+    const h1CompDate = maxD(h1Rows, 'HOTO 1 completed on');
+    const devDate = maxD(dRows, 'DEV Completed Timestamp');
+    const auditDate = maxD(dRows, 'Audit Completed on');
+    const d3ApprDate = maxD(d3Rows, '3D Approved on');
 
-    // 2. DEV TAT: 'Assigned Timestamp' -> 'Audit Completed On'  (DEV Task, matched by Project Name)
-    const devRows = devTask.filter(r => g(r,'Project Name') === pn);
-    let devTAT = null;
-    if(devRows.length){
-      const vals = devRows.map(r => tatDays(g(r,'Assigned Timestamp'), g(r,'Audit Completed on'))).filter(v=>v!=null);
-      if(vals.length) devTAT = Math.max(...vals);
-    }
+    const qhseApprRows = d3Rows.filter(r => g(r,'QHSE Status') === 'Approved');
+    const qhseDate = maxD(qhseApprRows, 'QHSE Completed Date');
 
-    // 3D Process rows for this project
-    const d3Rows = d3.filter(r => g(r,'Project Name') === pn);
+    const tsmLayoutDate = maxD(d3Rows.filter(r => g(r,'TSM Approved On')), 'TSM Approved On');
 
-    // 3. 3D Design TAT: '3D Design Start Time...' -> '3D Completed on'
-    let d3TAT = null;
-    if(d3Rows.length){
-      const vals = d3Rows.map(r => tatDays(g(r,'3D Design Start Time (DEV Audit Approval / Last Rejection)'), g(r,'3D Completed on'))).filter(v=>v!=null);
-      if(vals.length) d3TAT = Math.max(...vals);
-    }
+    const tsmApprRows = d3Rows.filter(r => (g(r,'TSM Verification Status')||'').toUpperCase().trim() === 'APPROVED');
+    const tsmDate = maxD(tsmApprRows, 'TSM Completed Date');
 
-    // 4. QHSE TAT: '3D Approved on' -> 'QHSE Completed Date'
-    let qhseTAT = null;
-    if(d3Rows.length){
-      const vals = d3Rows.map(r => tatDays(g(r,'3D Approved on'), g(r,'QHSE Completed Date'))).filter(v=>v!=null);
-      if(vals.length) qhseTAT = Math.max(...vals);
-    }
+    const designDate = maxD(d3Rows, '3D Design Admin Approval Timestamp');
 
-    // 5. TSM TAT: 'Design received for TSM Layout' -> 'TSM Completed Date'
-    let tsmTAT = null;
-    if(d3Rows.length){
-      const vals = d3Rows.map(r => tatDays(g(r,'Design received for TSM Layout'), g(r,'TSM Completed Date'))).filter(v=>v!=null);
-      if(vals.length) tsmTAT = Math.max(...vals);
-    }
+    const finApprRows = aRows.filter(r => g(r,'Finance Team Approval Status') === 'Approved');
+    const finDate = maxD(finApprRows, 'Finance Team Approved On');
 
-    rows.push({ name: pn, city, hoto1TAT, devTAT, d3TAT, qhseTAT, tsmTAT });
-  });
+    const anshApprRows = aRows.filter(r => g(r,'Anshuman Approval Status') === 'Approved');
+    const anshDate = maxD(anshApprRows, 'Anshuman Approved On');
 
-  window._tatData = rows;
+    const cxApprRows = d3Rows.filter(r => g(r,'3D Design Sent to Client for Approval Status') === 'Approved');
+    const cxDate = maxD(d3Rows, '3D Design Approval Timestamp');
 
-  // KPI summary
-  const avgHoto1 = avgOf(rows.map(r=>r.hoto1TAT));
-  const avgDev = avgOf(rows.map(r=>r.devTAT));
-  const avgD3 = avgOf(rows.map(r=>r.d3TAT));
-  const avgQhse = avgOf(rows.map(r=>r.qhseTAT));
-  const avgTsm = avgOf(rows.map(r=>r.tsmTAT));
+    const h2DoneRows = h2Rows.filter(r => g(r,'All discussions completed?') === 'YES');
+    const h2Date = maxD(h2DoneRows, 'HOTO 2 completed On');
 
-  const cHoto1 = rows.filter(r=>r.hoto1TAT!=null).length;
-  const cDev = rows.filter(r=>r.devTAT!=null).length;
-  const cD3 = rows.filter(r=>r.d3TAT!=null).length;
-  const cQhse = rows.filter(r=>r.qhseTAT!=null).length;
-  const cTsm = rows.filter(r=>r.tsmTAT!=null).length;
+    // --- CONDITIONS ---
+    const c_HOTO = !!hotoDate;
 
-  document.getElementById('tatKpis').innerHTML =
-    tatKpiHTML('var(--ac)','HOTO 1 TAT',avgHoto1,cHoto1) +
-    tatKpiHTML('var(--bl)','DEV TAT',avgDev,cDev) +
-    tatKpiHTML('var(--cy)','3D Design TAT',avgD3,cD3) +
-    tatKpiHTML('var(--gn)','QHSE TAT',avgQhse,cQhse) +
-    tatKpiHTML('var(--pk)','TSM TAT',avgTsm,cTsm);
+    const c_HOTO1 = h1Rows.some(r => g(r,'HOTO 1 completed ?') === 'Completed');
 
-  // Table
-  const fmt = v => v==null ? '<span style="color:var(--tm)">—</span>' : v+'d';
-  document.getElementById('tatTableBody').innerHTML = rows.map(r =>
-    `<tr>
-      <td style="font-weight:500">${r.name}</td>
-      <td>${r.city||'—'}</td>
-      <td>${fmt(r.hoto1TAT)}</td>
-      <td>${fmt(r.devTAT)}</td>
-      <td>${fmt(r.d3TAT)}</td>
-      <td>${fmt(r.qhseTAT)}</td>
-      <td>${fmt(r.tsmTAT)}</td>
-    </tr>`
-  ).join('');
-}
+    const c_DEV = dRows.length > 0 && !dRows.some(r => !g(r,'DEV Completed Timestamp'));
 
-function toggleMatrix(mode){
-  currentMatrixMode=mode;
-  document.getElementById('togCap').className='pa-toggle-btn'+(mode==='capacity'?' active':'');
-  document.getElementById('togCity').className='pa-toggle-btn'+(mode==='city'?' active':'');
-  renderMatrix(mode);
-}
+    const c_DEV_Approve = dRows.length > 0 && !dRows.some(r => !g(r,'Audit Completed on'));
 
-function renderMatrix(mode){
-  const {hoto1,devTask,d3,approval,hoto2,h1NameSet,h1Map}=window._paData||{};
-  if(!hoto1)return;
+    const c_3DDesign = !!d3ApprDate;
 
-  const h2Fields=Object.keys(hoto2[0]||{});
-  const h2CompField=h2Fields.find(k=>k.toLowerCase().includes('hoto 2 completed on'))||'HOTO 2 Completed On';
+    const c_QHSE = !!qhseDate;
 
-  // Build per-project name → dimension mapping
-  const projDim={};
-  hoto1.forEach(r=>{
-    const pn=g(r,'Project name');if(!pn)return;
-    if(mode==='capacity'){
-      const kw=num(g(r,'Project Size (Capacity)'));
-      projDim[pn]=capBucket(kw)||'Unknown';
-    } else {
-      projDim[pn]=g(r,'City')||'Unknown';
-    }
-  });
+    const c_TSM_Layout = !!tsmLayoutDate;
 
-  // Collect all dimensions
-  const dimSet=new Set(Object.values(projDim));
-  const bucketOrder=mode==='capacity'?['Alpha','Beta','Gamma','Hulk','Unknown']:[...dimSet].sort();
-  const dims=bucketOrder.filter(d=>dimSet.has(d));
+    const c_TSM = !!tsmDate;
 
-  // Stage columns
-  const stageCols=['HOTO 1 Complete','DEV Approved','3D Design Approved','QHSE Approved','TSM Verified','Finance Approved','Anshuman Approved','Client Approved','HOTO 2 Completed'];
+    const c_Design = d3Rows.length > 0 && !d3Rows.some(r => !g(r,'3D Design Admin Approval Timestamp'));
 
-  // Helper: get set of project names that passed each stage (filtered to HOTO 1 only)
-  function stageProjects(stageKey){
-    const s=new Set();
-    if(stageKey==='HOTO 1 Complete'){
-      hoto1.forEach(r=>{const st=g(r,'HOTO 1 Status').toLowerCase();if(st==='completed'||st==='complete')s.add(g(r,'Project name'))});
-    } else if(stageKey==='DEV Approved'){
-      devTask.forEach(r=>{if(g(r,'Audit Status')==='Approved'&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
-    } else if(stageKey==='3D Design Approved'){
-      d3.forEach(r=>{if(g(r,'3D Approved on')!==''&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
-    } else if(stageKey==='QHSE Approved'){
-      d3.forEach(r=>{if(g(r,'QHSE Status')==='Approved'&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
-    } else if(stageKey==='TSM Verified'){
-      d3.forEach(r=>{if((g(r,'TSM Verification Status')||'').trim().toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
-    } else if(stageKey==='Finance Approved'){
-      approval.forEach(r=>{if(g(r,'Finance Team Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name')))s.add(g(r,'Lead name'))});
-    } else if(stageKey==='Anshuman Approved'){
-      approval.forEach(r=>{if(g(r,'Anshuman Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name')))s.add(g(r,'Lead name'))});
-    } else if(stageKey==='Client Approved'){
-      // need Lead ID → Project Name mapping
-      const lidToProj={};d3.forEach(r=>{const lid=g(r,'Lead ID');const pn=g(r,'Project Name');if(lid&&pn)lidToProj[lid]=pn});
-      d3.forEach(r=>{if((g(r,'3D Design Sent to Client for Approval Status')||'').trim()==='Approved'&&h1NameSet.has(g(r,'Project Name'))){
-        s.add(g(r,'Project Name'));
-      }});
-    } else if(stageKey==='HOTO 2 Completed'){
-      hoto2.forEach(r=>{const v=(r[h2CompField]||'').trim();const pn=g(r,'Project name');if(v&&v!==''&&h1NameSet.has(pn))s.add(pn)});
-    }
-    return s;
-  }
+    const totalLeads = aRows.filter(r => g(r,'Lead name')).length;
+    const finApproved = finApprRows.length;
+    const c_Finance = totalLeads > 0 && totalLeads === finApproved;
 
-  // Pre-compute stage project sets
-  const stageSets={};stageCols.forEach(sc=>{stageSets[sc]=stageProjects(sc)});
+    const anshApproved = anshApprRows.length;
+    const c_Anshuman = totalLeads > 0 && totalLeads === anshApproved;
 
-  // Build matrix data
-  const matrix={};const totals={};
-  dims.forEach(d=>{matrix[d]={};stageCols.forEach(sc=>{matrix[d][sc]=0})});
-  stageCols.forEach(sc=>{totals[sc]=0});
+    const c_CX = cxApprRows.length > 0;
 
-  // For each project name, get its dimension, then check each stage
-  Object.keys(projDim).forEach(pn=>{
-    const dim=projDim[pn];
-    stageCols.forEach(sc=>{
-      if(stageSets[sc].has(pn)){matrix[dim][sc]++;totals[sc]++}
+    const c_HOTO2 = h2DoneRows.length > 0;
+
+    // --- DETERMINE STAGE & DATE ---
+    let stage, stageDate;
+    if (!c_HOTO)                              { stage = '0 HOTO Stage';               stageDate = null; }
+    else if (c_HOTO && !c_HOTO1)              { stage = '1 HOTO 1 Stage';             stageDate = hotoDate; }
+    else if (c_HOTO1 && !c_DEV)               { stage = '2 DEV Stage';                stageDate = h1CompDate; }
+    else if (c_DEV && !c_DEV_Approve)         { stage = '2.5 DEV Approve Stage';      stageDate = devDate; }
+    else if (c_DEV_Approve && !c_3DDesign)    { stage = '2.7 3D Design Stage';        stageDate = auditDate; }
+    else if (c_3DDesign && !c_QHSE)           { stage = '3 QHSE Stage';               stageDate = d3ApprDate; }
+    else if (c_QHSE && !c_TSM_Layout)         { stage = '4 TSM Layout Stage';         stageDate = qhseDate; }
+    else if (c_TSM_Layout && !c_TSM)          { stage = '4.5 TSM Stage';              stageDate = tsmLayoutDate; }
+    else if (c_TSM && !c_Design)              { stage = '5 Design Stage';             stageDate = tsmDate; }
+    else if (c_Design && !c_Finance)          { stage = '6 Finance Approval';         stageDate = designDate; }
+    else if (c_Finance && !c_Anshuman)        { stage = '7 Anshuman Approval';        stageDate = finDate; }
+    else if (c_Anshuman && !c_CX)             { stage = '8 CX Approval';              stageDate = anshDate; }
+    else if (c_CX && !c_HOTO2)               { stage = '9 HOTO 2 Stage';             stageDate = cxDate; }
+    else if (c_HOTO2)                         { stage = '✓ HOTO 2 Completed';         stageDate = h2Date; }
+    else                                      { stage = 'Unknown';                    stageDate = null; }
+
+    // Get city & capacity from HOTO 1 or HOTO sheet
+    const h1Match = hoto1.find(r => g(r,'Project name') === proj);
+    const city = h1Match ? g(h1Match,'City') : g(hRows[0],'City');
+    const cap = h1Match ? num(g(h1Match,'Project Size (Capacity)')) : 0;
+
+    results.push({
+      name: proj, city, cap, stage, stageDate,
+      days: daysBetween(stageDate),
+      completed: stage.startsWith('✓')
     });
   });
 
-  // Render table
-  const dimLabel=mode==='capacity'?'Category Cluster':'City';
-  let html=`<thead><tr><th style="text-align:left">${dimLabel}</th>`;
-  stageCols.forEach(sc=>{html+=`<th>${sc}</th>`});
-  html+=`</tr></thead><tbody>`;
+  return results.sort((a,b) => (b.days||0) - (a.days||0));
+}
 
-  dims.forEach(d=>{
-    if(d==='Unknown'&&!Object.values(matrix[d]).some(v=>v>0))return;
-    html+=`<tr><td>${d}</td>`;
-    stageCols.forEach(sc=>{html+=`<td>${matrix[d][sc]}</td>`});
-    html+=`</tr>`;
+// === RENDER AGING TAB ===
+function renderAging() {
+  const projects = calculateProjectStages();
+  window._agingData = projects;
+
+  const total = projects.length;
+  const completed = projects.filter(p => p.completed).length;
+  const inProgress = total - completed;
+  const avgDays = projects.filter(p=>p.days!=null&&!p.completed).reduce((s,p)=>s+p.days,0) / (inProgress||1);
+  const over30 = projects.filter(p=>p.days>30&&!p.completed).length;
+
+  // KPIs
+  document.getElementById('agingKpis').innerHTML =
+    kpiHTML('var(--ac)','Total Projects',total,'From HOTO sheet') +
+    kpiHTML('var(--gn)','Completed',completed,`${pct(completed,total)}% done`) +
+    kpiHTML('var(--bl)','In Progress',inProgress,`Across all stages`) +
+    kpiHTML('var(--rd)','Avg Days in Stage',Math.round(avgDays),'Active projects') +
+    kpiHTML('var(--pk)','Over 30 Days',over30,`${pct(over30,inProgress)}% of active`);
+
+  // Stage distribution bars
+  const stageGroups = {};
+  projects.forEach(p => { stageGroups[p.stage] = (stageGroups[p.stage]||0)+1; });
+  const stageEntries = Object.entries(stageGroups).sort((a,b)=> {
+    const na = parseFloat(a[0]) || 99, nb = parseFloat(b[0]) || 99;
+    return na - nb;
   });
+  const stMax = Math.max(...stageEntries.map(s=>s[1]),1);
+  const stColors = ['var(--ac)','var(--bl)','var(--pr)','var(--cy)','var(--gn)','var(--pk)','var(--rd)','var(--ac)','var(--bl)','var(--pr)','var(--cy)','var(--gn)','var(--pk)','var(--rd)'];
+  document.getElementById('stageBars').innerHTML = stageEntries.map((s,i) =>
+    sbarHTML(s[0], s[1], pct(s[1],stMax), stColors[i%stColors.length])
+  ).join('');
 
-  html+=`<tr class="total-row"><td>Total Matrix Count</td>`;
-  stageCols.forEach(sc=>{html+=`<td>${totals[sc]}</td>`});
-  html+=`</tr></tbody>`;
+  // Aging distribution
+  const aging = [{l:'0–7 days',c:0},{l:'8–15 days',c:0},{l:'16–30 days',c:0},{l:'31–60 days',c:0},{l:'60+ days',c:0}];
+  projects.filter(p=>!p.completed&&p.days!=null).forEach(p=>{
+    if(p.days<=7) aging[0].c++;
+    else if(p.days<=15) aging[1].c++;
+    else if(p.days<=30) aging[2].c++;
+    else if(p.days<=60) aging[3].c++;
+    else aging[4].c++;
+  });
+  const agMax = Math.max(...aging.map(a=>a.c),1);
+  const agColors = ['var(--gn)','var(--cy)','var(--ac)','var(--pk)','var(--rd)'];
+  document.getElementById('agingDistBars').innerHTML = aging.map((a,i)=>
+    sbarHTML(a.l, a.c+' projects', pct(a.c,agMax), agColors[i])
+  ).join('');
 
-  document.getElementById('paMatrixTable').innerHTML=html;
+  // Filters
+  const stageNames = ['all', ...stageEntries.map(s=>s[0])];
+  document.getElementById('stageFilterRow').innerHTML =
+    `<div class="fbtn on" onclick="filterAging('all',this)">All (${total})</div>` +
+    `<div class="fbtn" onclick="filterAging('active',this)">Active Only</div>` +
+    `<div class="fbtn" onclick="filterAging('over30',this)">Over 30 Days</div>` +
+    `<div class="fbtn" onclick="filterAging('completed',this)">Completed</div>`;
+
+  filterAging('all', document.querySelector('#stageFilterRow .fbtn'));
 }
 
-// ===== AGING =====
-function renderAging(){
-  const projects=calculateProjectStages();window._agingData=projects;
-  const total=projects.length;const completed=projects.filter(p=>p.completed).length;const inProgress=total-completed;
-  const avgDays=projects.filter(p=>p.days!=null&&!p.completed).reduce((s,p)=>s+p.days,0)/(inProgress||1);
-  const over30=projects.filter(p=>p.days>30&&!p.completed).length;
-
-  document.getElementById('agingKpis').innerHTML=
-    kpiHTML('var(--ac)','Total Projects',total,'From HOTO 1 Master')+kpiHTML('var(--gn)','Completed',completed,pct(completed,total)+'% done')+
-    kpiHTML('var(--bl)','In Progress',inProgress,'Across all stages')+kpiHTML('var(--rd)','Avg Days in Stage',Math.round(avgDays),'Active projects')+
-    kpiHTML('var(--pk)','Over 30 Days',over30,pct(over30,inProgress)+'% of active');
-
-  renderStageBarsHTML(projects);
-
-  const aging=[{l:'0–7 days',c:0},{l:'8–15 days',c:0},{l:'16–30 days',c:0},{l:'31–60 days',c:0},{l:'60+ days',c:0}];
-  projects.filter(p=>!p.completed&&p.days!=null).forEach(p=>{if(p.days<=7)aging[0].c++;else if(p.days<=15)aging[1].c++;else if(p.days<=30)aging[2].c++;else if(p.days<=60)aging[3].c++;else aging[4].c++});
-  const agMax=Math.max(...aging.map(a=>a.c),1);const agColors=['var(--gn)','var(--cy)','var(--ac)','var(--pk)','var(--rd)'];
-  document.getElementById('agingDistBars').innerHTML=aging.map((a,i)=>sbarHTML(a.l,a.c+' projects',pct(a.c,agMax),agColors[i])).join('');
-
-  document.getElementById('stageFilterRow').innerHTML=
-    `<div class="fbtn ${currentAgingFilter==='all'&&!currentStageCrossFilter?'on':''}" onclick="setAgingBadgeFilter('all',this)">All (${total})</div>`+
-    `<div class="fbtn ${currentAgingFilter==='active'?'on':''}" onclick="setAgingBadgeFilter('active',this)">Active Only</div>`+
-    `<div class="fbtn ${currentAgingFilter==='over30'?'on':''}" onclick="setAgingBadgeFilter('over30',this)">Over 30 Days</div>`+
-    `<div class="fbtn ${currentAgingFilter==='completed'?'on':''}" onclick="setAgingBadgeFilter('completed',this)">Completed</div>`;
-  buildAndRenderAgingTable();
-}
-
-function renderStageBarsHTML(projects){
-  const stageGroups={};projects.forEach(p=>{stageGroups[p.stage]=(stageGroups[p.stage]||0)+1});
-  const pipelineOrder=['1 HOTO 1 Stage','2 DEV Stage','2.5 DEV Approve Stage','2.7 3D Design Stage','3 QHSE Stage','4 TSM Layout Stage','4.5 TSM Stage','5 Design Stage','6 Finance Approval','7 Anshuman Approval','8 CX Approval','9 HOTO 2 Stage','✓ HOTO 2 Completed'];
-  const stageEntries=[];pipelineOrder.forEach(stg=>{if(stageGroups[stg])stageEntries.push([stg,stageGroups[stg]])});
-  Object.keys(stageGroups).forEach(stg=>{if(!pipelineOrder.includes(stg))stageEntries.push([stg,stageGroups[stg]])});
-  const stMax=Math.max(...stageEntries.map(s=>s[1]),1);
-  document.getElementById('stageBars').innerHTML=stageEntries.map(([k,v])=>{const c=stageColorMap[k]||'var(--tm)';return clickableStageBarHTML(k,k,v,pct(v,stMax),c)}).join('');
-}
-
-function toggleStageCrossFilter(stageId){
-  if(currentStageCrossFilter===stageId)currentStageCrossFilter=null;else{currentStageCrossFilter=stageId;currentAgingFilter='all'}
-  renderStageBarsHTML(window._agingData||[]);
-  document.querySelectorAll('#stageFilterRow .fbtn').forEach(b=>b.classList.remove('on'));
-  if(!currentStageCrossFilter)document.querySelector('#stageFilterRow .fbtn').classList.add('on');
-  buildAndRenderAgingTable();
-}
-function setAgingBadgeFilter(filterType,element){
-  currentStageCrossFilter=null;currentAgingFilter=filterType;
-  renderStageBarsHTML(window._agingData||[]);
-  document.querySelectorAll('#stageFilterRow .fbtn').forEach(b=>b.classList.remove('on'));element.classList.add('on');
-  buildAndRenderAgingTable();
-}
-function sortAgingTable(key){if(currentSortKey===key)currentSortAsc=!currentSortAsc;else{currentSortKey=key;currentSortAsc=true}buildAndRenderAgingTable()}
-
-function buildAndRenderAgingTable(){
-  const tb=document.getElementById('agingTable');let data=window._agingData||[];
-  if(currentStageCrossFilter)data=data.filter(p=>p.stage===currentStageCrossFilter);
-  else{if(currentAgingFilter==='active')data=data.filter(p=>!p.completed);else if(currentAgingFilter==='over30')data=data.filter(p=>p.days>30&&!p.completed);else if(currentAgingFilter==='completed')data=data.filter(p=>p.completed)}
-  data.sort((a,b)=>{let va=a[currentSortKey],vb=b[currentSortKey];if(va==null)return currentSortAsc?1:-1;if(vb==null)return currentSortAsc?-1:1;if(typeof va==='string')return currentSortAsc?va.localeCompare(vb):vb.localeCompare(va);return currentSortAsc?va-vb:vb-va});
-  ['name','city','stage','stageDate','days','cap'].forEach(col=>{const ind=document.getElementById('sort_'+col);if(ind){if(currentSortKey===col){ind.textContent=currentSortAsc?' ▲':' ▼';ind.style.color='var(--ac)'}else ind.textContent=''}});
-  tb.innerHTML=data.map(p=>{const c=stageColorMap[p.stage]||'var(--tx)';return `<tr><td style="font-weight:500">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${c}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td><td>${p.cap||'—'}</td></tr>`}).join('');
-}
-
-function agingBadge(days,completed){
-  if(completed)return '<span class="pill g">Done</span>';if(days==null)return '<span class="pill" style="background:var(--sf2);color:var(--tm)">N/A</span>';
-  if(days<=7)return `<span class="pill g">${days}d</span>`;if(days<=15)return `<span class="pill cy">${days}d</span>`;
-  if(days<=30)return `<span class="pill y">${days}d</span>`;if(days<=60)return `<span class="pill" style="background:var(--pkd);color:var(--pk)">${days}d</span>`;
+function agingBadge(days, completed) {
+  if(completed) return '<span class="pill g">Done</span>';
+  if(days==null) return '<span class="pill" style="background:var(--sf2);color:var(--tm)">N/A</span>';
+  if(days<=7) return `<span class="pill g">${days}d</span>`;
+  if(days<=15) return `<span class="pill cy">${days}d</span>`;
+  if(days<=30) return `<span class="pill y">${days}d</span>`;
+  if(days<=60) return `<span class="pill" style="background:var(--pkd);color:var(--pk)">${days}d</span>`;
   return `<span class="pill r">${days}d</span>`;
 }
 
+function filterAging(filter, el) {
+  document.querySelectorAll('#stageFilterRow .fbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const tb = document.getElementById('agingTable');
+  let data = window._agingData || [];
+  if(filter==='active') data = data.filter(p=>!p.completed);
+  else if(filter==='over30') data = data.filter(p=>p.days>30&&!p.completed);
+  else if(filter==='completed') data = data.filter(p=>p.completed);
+
+  tb.innerHTML = data.map(p =>
+    `<tr><td style="font-weight:500">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${p.completed?'var(--gn)':'var(--ac)'}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td><td>${p.cap||'—'}</td></tr>`
+  ).join('');
+}
+
+// Start
 fetchAll();
 </script>
 </body>
