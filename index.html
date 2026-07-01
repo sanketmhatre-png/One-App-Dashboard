@@ -129,6 +129,11 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 .pm-close{cursor:pointer;font-size:18px;color:var(--tm);line-height:1;padding:2px 6px;border-radius:6px;transition:.15s}
 .pm-close:hover{color:var(--rd);background:var(--sf2)}
 .pm-body{padding:16px 20px;overflow:auto;max-height:100%}
+.sa-banner{padding:8px 14px;background:var(--ag);border:1px dashed var(--ac);border-radius:8px;font-size:11px;color:var(--ac);align-items:center;justify-content:space-between;margin-bottom:14px;display:flex}
+.sa-banner .sa-clear{cursor:pointer;font-weight:700;color:var(--ac)}
+.sa-kpi-row .k{cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s}
+.sa-kpi-row .k:hover{transform:translateY(-2px);border-color:rgba(25,188,255,.4);box-shadow:0 4px 12px rgba(25,188,255,.15)}
+.sa-kpi-row .k.kpi-active{border-color:var(--ac);box-shadow:0 0 0 2px rgba(245,158,11,.35)}
 .pa-toggle3-thumb{position:absolute;top:3px;left:3px;height:calc(100% - 6px);border-radius:9px;background:var(--brand-grad);box-shadow:0 2px 12px rgba(20,28,165,.5);transition:transform .25s cubic-bezier(.4,0,.2,1),width .25s cubic-bezier(.4,0,.2,1);z-index:0}
 .pa-toggle3-btn{position:relative;z-index:1;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--tm);font-family:Inter;letter-spacing:.2px;transition:color .2s;white-space:nowrap}
 .pa-toggle3-btn:hover{color:var(--tx)}
@@ -538,7 +543,8 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 
 <!-- TAB 10: DEV STAGE -->
 <div class="pn" id="t10">
-  <div class="kr" id="sa10Kpis"></div>
+  <div class="kr sa-kpi-row" id="sa10Kpis"></div>
+  <div id="sa10Banner" class="sa-banner" style="display:none"></div>
   <div class="g2">
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>City Wise — Avg TAT (days)</div><div id="sa10City"></div></div>
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Capacity Wise — Avg TAT (days)</div><div id="sa10Cap"></div></div>
@@ -548,7 +554,8 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 
 <!-- TAB 11: 3D STAGE -->
 <div class="pn" id="t11">
-  <div class="kr" id="sa11Kpis"></div>
+  <div class="kr sa-kpi-row" id="sa11Kpis"></div>
+  <div id="sa11Banner" class="sa-banner" style="display:none"></div>
   <div class="g2">
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>City Wise — Avg TAT (days)</div><div id="sa11City"></div></div>
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Capacity Wise — Avg TAT (days)</div><div id="sa11Cap"></div></div>
@@ -558,7 +565,8 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 
 <!-- TAB 12: QHSE STAGE -->
 <div class="pn" id="t12">
-  <div class="kr" id="sa12Kpis"></div>
+  <div class="kr sa-kpi-row" id="sa12Kpis"></div>
+  <div id="sa12Banner" class="sa-banner" style="display:none"></div>
   <div class="g2">
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>City Wise — Avg TAT (days)</div><div id="sa12City"></div></div>
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Capacity Wise — Avg TAT (days)</div><div id="sa12Cap"></div></div>
@@ -568,7 +576,8 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 
 <!-- TAB 13: TSM STAGE -->
 <div class="pn" id="t13">
-  <div class="kr" id="sa13Kpis"></div>
+  <div class="kr sa-kpi-row" id="sa13Kpis"></div>
+  <div id="sa13Banner" class="sa-banner" style="display:none"></div>
   <div class="g2">
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>City Wise — Avg TAT (days)</div><div id="sa13City"></div></div>
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Capacity Wise — Avg TAT (days)</div><div id="sa13Cap"></div></div>
@@ -576,9 +585,10 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
   <div class="cd"><div class="ct"><div class="dot" style="background:var(--gn)"></div>Project Detail</div><div class="scr" style="max-height:500px"><table class="mt" id="sa13Table"></table></div></div>
 </div>
 
-<!-- TAB 14: APPROVAL STAGE (Finance / Anshuman / Client) -->
+<!-- TAB 14: APPROVAL STAGE -->
 <div class="pn" id="t14">
-  <div class="kr" id="sa14Kpis"></div>
+  <div class="kr sa-kpi-row" id="sa14Kpis"></div>
+  <div id="sa14Banner" class="sa-banner" style="display:none"></div>
   <div class="g2">
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>City Wise — Avg TAT (days)</div><div id="sa14City"></div></div>
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--ac)"></div>Capacity Wise — Avg TAT (days)</div><div id="sa14Cap"></div></div>
@@ -2111,124 +2121,149 @@ const STAGE_TAB_CONFIG = [
   { tabId:14, title:'Approval Stage', stageKeys:['stage7','stage8','stage9'], stageLabels:['Finance','Anshuman','Client Appr'], colors:['var(--gn)','var(--cy)','var(--pr)'] },
 ];
 
+// Per-tab filter state: { type:'status'|'city'|'cap', value:'...' } or null
+window._saFilters = {};
+
 function renderAllStageTabs(){
   const stageData = buildStageTATData();
   const {h1Map} = window._paData || {};
   const agingData = window._agingData || [];
-  STAGE_TAB_CONFIG.forEach(cfg => renderStageAnalysis(cfg, stageData, h1Map, agingData));
+  // Cache for reuse
+  window._saStageData = stageData;
+  window._saH1Map = h1Map;
+  STAGE_TAB_CONFIG.forEach(cfg => renderStageAnalysis(cfg));
 }
 
-function renderStageAnalysis(cfg, stageData, h1Map, agingData){
+function saToggleFilter(tabId, type, value){
+  const cur = window._saFilters[tabId];
+  if(cur && cur.type===type && cur.value===value){
+    window._saFilters[tabId] = null;
+  } else {
+    window._saFilters[tabId] = {type, value};
+  }
+  const cfg = STAGE_TAB_CONFIG.find(c=>c.tabId===tabId);
+  if(cfg) renderStageAnalysis(cfg);
+}
+
+function renderStageAnalysis(cfg){
+  const stageData = window._saStageData || [];
+  const h1Map = window._saH1Map || {};
   const {tabId, title, stageKeys: sKeys, stageLabels: sLabels, colors: sColors} = cfg;
   const prefix = 'sa'+tabId;
+  const filter = window._saFilters[tabId] || null;
 
-  // Compute per-stage stats
-  const stageAvgs = sKeys.map(sk => avgOf(stageData.map(r=>r[sk]).filter(v=>v!=null)));
-  const stageCounts = sKeys.map(sk => stageData.filter(r=>r[sk]!=null).length);
-  const completedCount = stageData.filter(r => sKeys.every(sk=>r[sk]!=null)).length;
-  const pendingCount = stageData.length - completedCount;
+  // Classify each project
+  const enriched = stageData.map(r=>{
+    const h1r = h1Map[r.name];
+    const hasAll = sKeys.every(k=>r[k]!=null);
+    const hasAny = sKeys.some(k=>r[k]!=null);
+    const cap = h1r ? (num(g(h1r,'Project Size (Capacity)'))||0) : 0;
+    const bucket = capBucket(cap) || 'Unknown';
+    const city = r.city || 'Unknown';
+    return {...r, hasAll, hasAny, cap, bucket, city, status: hasAll?'complete':'pending'};
+  });
 
-  // Total avg across sub-stages for this tab
-  const allVals = [];
-  stageData.forEach(r=>{ sKeys.forEach(sk=>{ if(r[sk]!=null) allVals.push(r[sk]); }); });
+  const stageAvgs = sKeys.map(sk => avgOf(enriched.map(r=>r[sk]).filter(v=>v!=null)));
+  const stageCounts = sKeys.map(sk => enriched.filter(r=>r[sk]!=null).length);
+  const completedCount = enriched.filter(r=>r.hasAll).length;
+  const pendingCount = enriched.length - completedCount;
+  const allVals = []; enriched.forEach(r=>sKeys.forEach(sk=>{if(r[sk]!=null) allVals.push(r[sk])}));
   const overallAvg = avgOf(allVals);
 
-  // KPIs
+  // Clickable KPI cards
+  const kpiClick = (type,val) => {
+    const active = filter && filter.type===type && filter.value===val;
+    return `onclick="saToggleFilter(${tabId},'${type}','${val}')" class="k${active?' kpi-active':''}" style="cursor:pointer"`;
+  };
   document.getElementById(prefix+'Kpis').innerHTML =
-    kpiHTML('var(--ac)', title, stageData.length, 'Total projects with data') +
-    kpiHTML('var(--gn)', 'Completed', completedCount, 'All sub-stages done') +
-    kpiHTML('var(--rd)', 'Pending', pendingCount, 'Some sub-stages missing') +
+    `<div ${kpiClick('status','all')}><div class="tp" style="background:var(--ac)"></div><div class="l">${title.toUpperCase()}</div><div class="v" style="color:var(--ac)">${enriched.length}</div><div class="dt">Total projects with data</div></div>` +
+    `<div ${kpiClick('status','complete')}><div class="tp" style="background:var(--gn)"></div><div class="l">COMPLETED</div><div class="v" style="color:var(--gn)">${completedCount}</div><div class="dt">All sub-stages done</div></div>` +
+    `<div ${kpiClick('status','pending')}><div class="tp" style="background:var(--rd)"></div><div class="l">PENDING</div><div class="v" style="color:var(--rd)">${pendingCount}</div><div class="dt">Some sub-stages missing</div></div>` +
     sKeys.map((sk,i) =>
       kpiHTML(sColors[i], 'Avg '+sLabels[i], stageAvgs[i]!=null?stageAvgs[i].toFixed(1)+'<span style="font-size:12px;color:var(--tm)"> days</span>':'—', stageCounts[i]+' measured')
     ).join('');
 
-  // City-wise avg TAT bars
-  const cityGroups = {};
-  stageData.forEach(r => {
-    const city = r.city || 'Unknown';
-    if(!cityGroups[city]) cityGroups[city] = [];
-    cityGroups[city].push(r);
-  });
-  const cityEntries = Object.entries(cityGroups).sort((a,b)=>b[1].length-a[1].length);
+  // Filter banner
+  const banner = document.getElementById(prefix+'Banner');
+  if(filter){
+    let label = '';
+    if(filter.type==='status') label = filter.value==='complete'?'Completed projects only':filter.value==='pending'?'Pending projects only':'All projects';
+    else if(filter.type==='city') label = 'City: '+filter.value;
+    else if(filter.type==='cap') label = 'Capacity: '+filter.value;
+    banner.style.display = 'flex';
+    banner.innerHTML = `<span>Filtered: <b style="color:var(--tx)">${label}</b></span><span class="sa-clear" onclick="saToggleFilter(${tabId},'${filter.type}','${filter.value}')">✕ Clear</span>`;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Apply filter to get visible rows
+  let visible = enriched;
+  if(filter){
+    if(filter.type==='status' && filter.value!=='all') visible = enriched.filter(r=>r.status===filter.value);
+    else if(filter.type==='city') visible = enriched.filter(r=>r.city===filter.value);
+    else if(filter.type==='cap') visible = enriched.filter(r=>r.bucket===filter.value);
+  }
+
+  // City bars (clickable)
   const barColors = ['var(--bl)','var(--cy)','var(--pr)','var(--ac)','var(--gn)','var(--pk)','var(--tm)'];
-
-  document.getElementById(prefix+'City').innerHTML = cityEntries.map(([city,projs],ci) => {
-    const vals = [];
-    projs.forEach(r=>sKeys.forEach(sk=>{ if(r[sk]!=null) vals.push(r[sk]); }));
-    const avg = avgOf(vals);
-    if(avg==null) return '';
-    return sbarHTML(city+' ('+projs.length+')', avg.toFixed(1)+'d', Math.min(pct(avg, (overallAvg||1)*2), 100), barColors[ci%barColors.length]);
+  const cityGroups = {};
+  visible.forEach(r=>{(cityGroups[r.city]=cityGroups[r.city]||[]).push(r)});
+  const cityEntries = Object.entries(cityGroups).sort((a,b)=>b[1].length-a[1].length);
+  document.getElementById(prefix+'City').innerHTML = cityEntries.map(([city,projs],ci)=>{
+    const vals=[]; projs.forEach(r=>sKeys.forEach(sk=>{if(r[sk]!=null) vals.push(r[sk])}));
+    const avg = avgOf(vals); if(avg==null) return '';
+    const active = filter && filter.type==='city' && filter.value===city;
+    const safe = city.replace(/'/g,"\\'");
+    return `<div class="hb clickable${active?' active-filter':''}" onclick="saToggleFilter(${tabId},'city','${safe}')"><div class="hl"><span>${city} (${projs.length})</span><span>${avg.toFixed(1)}d</span></div><div class="ht"><div class="hf" style="width:${Math.min(pct(avg,(overallAvg||1)*2),100)}%;background:${barColors[ci%barColors.length]}"></div></div></div>`;
   }).filter(Boolean).join('') || '<div style="color:var(--tm);font-size:11px">No data</div>';
 
-  // Capacity-wise avg TAT bars
+  // Capacity bars (clickable)
   const capGroups = {};
-  stageData.forEach(r => {
-    const h1r = h1Map ? h1Map[r.name] : null;
-    const kw = h1r ? num(g(h1r,'Project Size (Capacity)')) : 0;
-    const bucket = capBucket(kw) || 'Unknown';
-    if(!capGroups[bucket]) capGroups[bucket] = [];
-    capGroups[bucket].push(r);
-  });
+  visible.forEach(r=>{(capGroups[r.bucket]=capGroups[r.bucket]||[]).push(r)});
   const capOrder = ['Alpha','Beta','Gamma','Hulk','Unknown'].filter(b=>capGroups[b]);
-  document.getElementById(prefix+'Cap').innerHTML = capOrder.map((bucket,ci) => {
+  document.getElementById(prefix+'Cap').innerHTML = capOrder.map((bucket,ci)=>{
     const projs = capGroups[bucket];
-    const vals = [];
-    projs.forEach(r=>sKeys.forEach(sk=>{ if(r[sk]!=null) vals.push(r[sk]); }));
-    const avg = avgOf(vals);
-    if(avg==null) return '';
-    return sbarHTML(bucket+' ('+projs.length+')', avg.toFixed(1)+'d', Math.min(pct(avg, (overallAvg||1)*2), 100), barColors[ci%barColors.length]);
+    const vals=[]; projs.forEach(r=>sKeys.forEach(sk=>{if(r[sk]!=null) vals.push(r[sk])}));
+    const avg = avgOf(vals); if(avg==null) return '';
+    const active = filter && filter.type==='cap' && filter.value===bucket;
+    return `<div class="hb clickable${active?' active-filter':''}" onclick="saToggleFilter(${tabId},'cap','${bucket}')"><div class="hl"><span>${bucket} (${projs.length})</span><span>${avg.toFixed(1)}d</span></div><div class="ht"><div class="hf" style="width:${Math.min(pct(avg,(overallAvg||1)*2),100)}%;background:${barColors[ci%barColors.length]}"></div></div></div>`;
   }).filter(Boolean).join('') || '<div style="color:var(--tm);font-size:11px">No data</div>';
 
-  // Project detail table
-  const thead = `<thead><tr>
-    <th>Project</th><th>City</th><th>kWp</th>
-    ${sKeys.map((sk,i)=>`<th style="text-align:center">${sLabels[i]}</th>`).join('')}
-    <th style="text-align:center">Total</th>
-    <th>Status</th>
-  </tr></thead>`;
-
-  // Sort by total TAT desc
-  const sorted = [...stageData].sort((a,b)=>{
+  // Project table (filtered)
+  const sorted = [...visible].sort((a,b)=>{
     const ta = sKeys.reduce((s,k)=>s+(a[k]??0),0);
     const tb = sKeys.reduce((s,k)=>s+(b[k]??0),0);
     return tb-ta;
   });
 
+  const thead = `<thead><tr>
+    <th>Project</th><th>City</th><th>kWp</th>
+    ${sKeys.map((sk,i)=>`<th style="text-align:center">${sLabels[i]}</th>`).join('')}
+    <th style="text-align:center">Total</th><th>Status</th>
+  </tr></thead>`;
+
   const tbody = sorted.map(r=>{
-    const h1r = h1Map ? h1Map[r.name] : null;
-    const cap = h1r ? (num(g(h1r,'Project Size (Capacity)'))||'—') : '—';
-    const hasAll = sKeys.every(k=>r[k]!=null);
-    const hasAny = sKeys.some(k=>r[k]!=null);
-    if(!hasAny) return '';
+    if(!r.hasAny) return '';
     const total = sKeys.reduce((s,k)=>s+(r[k]??0),0);
-    const cells = sKeys.map((sk,i) => {
+    const cells = sKeys.map((sk,i)=>{
       const v = r[sk];
       if(v==null) return '<td style="text-align:center;color:var(--tm)">—</td>';
-      const cls = stageAvgs[i]!=null ? (v<=stageAvgs[i]?'ok':'over') : '';
+      const cls = stageAvgs[i]!=null?(v<=stageAvgs[i]?'ok':'over'):'';
       return `<td style="text-align:center"><span class="tat-badge ${cls}">${v}d</span></td>`;
     }).join('');
-    const statusPill = hasAll
-      ? '<span class="pill g">Complete</span>'
-      : '<span class="pill y">In Progress</span>';
-    return `<tr>
-      <td style="font-weight:500">${r.name}</td>
-      <td>${r.city||'—'}</td>
-      <td>${cap}</td>
-      ${cells}
-      <td style="text-align:center;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--ac)">${hasAll?total+'d':'—'}</td>
-      <td>${statusPill}</td>
-    </tr>`;
+    const statusPill = r.hasAll?'<span class="pill g">Complete</span>':'<span class="pill y">In Progress</span>';
+    return `<tr><td style="font-weight:500">${r.name}</td><td>${r.city}</td><td>${r.cap||'—'}</td>${cells}<td style="text-align:center;font-weight:700;font-family:'Space Grotesk',sans-serif;color:var(--ac)">${r.hasAll?total+'d':'—'}</td><td>${statusPill}</td></tr>`;
   }).filter(Boolean).join('');
 
-  // Average row
+  const visAvgs = sKeys.map(sk=>avgOf(visible.map(r=>r[sk]).filter(v=>v!=null)));
   const avgRow = `<tr style="border-top:2px solid var(--bl);background:rgba(59,130,246,.06)">
-    <td colspan="3" style="font-weight:700;color:var(--bl)">Average</td>
-    ${sKeys.map((sk,i)=>`<td style="text-align:center;font-weight:700;color:${sColors[i]}">${stageAvgs[i]!=null?stageAvgs[i].toFixed(1)+'d':'—'}</td>`).join('')}
-    <td style="text-align:center;font-weight:700;color:var(--ac)">${stageAvgs.every(a=>a!=null)?stageAvgs.reduce((s,a)=>s+a,0).toFixed(1)+'d':'—'}</td>
+    <td colspan="3" style="font-weight:700;color:var(--bl)">Average (${visible.length})</td>
+    ${sKeys.map((sk,i)=>`<td style="text-align:center;font-weight:700;color:${sColors[i]}">${visAvgs[i]!=null?visAvgs[i].toFixed(1)+'d':'—'}</td>`).join('')}
+    <td style="text-align:center;font-weight:700;color:var(--ac)">${visAvgs.every(a=>a!=null)?visAvgs.reduce((s,a)=>s+a,0).toFixed(1)+'d':'—'}</td>
     <td></td>
   </tr>`;
 
-  document.getElementById(prefix+'Table').innerHTML = thead + '<tbody>' + tbody + avgRow + '</tbody>';
+  document.getElementById(prefix+'Table').innerHTML = thead+'<tbody>'+tbody+avgRow+'</tbody>';
 }
 
 // ===== AGING =====
