@@ -405,6 +405,36 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--bl)"></div>Stage-to-Stage Drop-off</div><div id="paDropoff"></div></div>
     <div class="cd"><div class="ct"><div class="dot" style="background:var(--gn)"></div>Completion Rate by Stage</div><div id="paCompRate"></div></div>
   </div>
+
+  <div class="pa-matrix-card">
+    <div class="pa-matrix-hdr">
+      <div>
+        <div class="pa-matrix-title">Completed Projects — Avg TAT per Stage</div>
+        <div class="pa-matrix-sub">Average days to complete each process stage, for projects with all required dates populated</div>
+      </div>
+    </div>
+    <div class="kr" id="avgTatKpis" style="margin-bottom:14px"></div>
+    <div class="scr" style="max-height:520px">
+      <table class="mt">
+        <thead><tr>
+          <th>Project</th>
+          <th>City</th>
+          <th>S1<br><span style="font-weight:400;color:var(--tm)">HOTO 1 (Start)</span></th>
+          <th>S2<br><span style="font-weight:400;color:var(--tm)">DEV→Audit</span></th>
+          <th>S3<br><span style="font-weight:400;color:var(--tm)">Audit→3D</span></th>
+          <th>S4<br><span style="font-weight:400;color:var(--tm)">3D→QHSE</span></th>
+          <th>S5<br><span style="font-weight:400;color:var(--tm)">QHSE→TSM Layout</span></th>
+          <th>S6<br><span style="font-weight:400;color:var(--tm)">TSM Layout→TSM</span></th>
+          <th>S7<br><span style="font-weight:400;color:var(--tm)">Admin→Finance</span></th>
+          <th>S8<br><span style="font-weight:400;color:var(--tm)">Finance→Anshuman</span></th>
+          <th>S9<br><span style="font-weight:400;color:var(--tm)">Anshuman→Client</span></th>
+          <th>S10<br><span style="font-weight:400;color:var(--tm)">Client→HOTO 2</span></th>
+          <th>Total TAT</th>
+        </tr></thead>
+        <tbody id="avgTatTableBody"></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- TAB 8: TAT ANALYSIS -->
@@ -453,11 +483,16 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
       <table class="mt">
         <thead><tr>
           <th>Designer</th><th>Project</th><th>City</th><th>HOTO 1 Status</th><th>Capacity (kWp)</th>
-          <th>1. DEV → Audit Approved</th>
-          <th>2. DEV → 3D Approved</th>
-          <th>3. DEV → QHSE Approved</th>
-          <th>4. QHSE → TSM Verified</th>
-          <th>5. TSM → Project Trigger</th>
+          <th>S1<br><span style="font-weight:400;color:var(--tm)">HOTO 1 (Start)</span></th>
+          <th>S2<br><span style="font-weight:400;color:var(--tm)">DEV→Audit</span></th>
+          <th>S3<br><span style="font-weight:400;color:var(--tm)">Audit→3D</span></th>
+          <th>S4<br><span style="font-weight:400;color:var(--tm)">3D→QHSE</span></th>
+          <th>S5<br><span style="font-weight:400;color:var(--tm)">QHSE→TSM Layout</span></th>
+          <th>S6<br><span style="font-weight:400;color:var(--tm)">TSM Layout→TSM</span></th>
+          <th>S7<br><span style="font-weight:400;color:var(--tm)">Admin→Finance</span></th>
+          <th>S8<br><span style="font-weight:400;color:var(--tm)">Finance→Anshuman</span></th>
+          <th>S9<br><span style="font-weight:400;color:var(--tm)">Anshuman→Client</span></th>
+          <th>S10<br><span style="font-weight:400;color:var(--tm)">Client→HOTO 2</span></th>
         </tr></thead>
         <tbody id="designerDetailTable"></tbody>
       </table>
@@ -867,6 +902,7 @@ function renderProjectAnalysis(){
 
   // Matrix table
   renderMatrix(currentMatrixMode);
+  renderAvgTatTable();
   // Position the toggle thumb correctly on first paint (after layout is ready)
   requestAnimationFrame(()=>{
     const activeBtn = document.getElementById(currentMatrixMode==='capacity'?'togCap':'togCity');
@@ -879,11 +915,19 @@ function renderProjectAnalysis(){
 }
 
 // ===== STAGE TAT vs TARGET (5-stage process, designer-wise) =====
-let stageTargets = [3, 5, 7, 3, 3]; // default target days for stage 1..5 — edit via UI inputs
+let stageTargets = [3, 3, 5, 3, 3, 3, 5, 3, 3, 5]; // 10 stages — edit via UI inputs
+const STAGE_KEYS   = ['stage1','stage2','stage3','stage4','stage5','stage6','stage7','stage8','stage9','stage10'];
+const STAGE_LABELS = ['HOTO 1','DEV Complete','3D Design','QHSE','TSM Layout','TSM Verified','Finance','Anshuman','Client Appr','HOTO 2'];
+const STAGE_LONG   = ['HOTO 1 (0d anchor)','DEV Complete→Audit','Audit→3D Approved','3D→QHSE','QHSE→TSM Layout','TSM Layout→TSM Verified','Admin→Finance','Finance→Anshuman','Anshuman→Client','Client→HOTO 2'];
+const STAGE_COLORS = ['var(--bl)','var(--pr)','var(--gn)','var(--cy)','var(--pk)','var(--ac)','var(--rd)','#7c3aed','var(--pr)','var(--gn)'];
 let currentDesignerChartFilter = null; // tracks which designer bar is active in the completed-projects chart
 
 function renderStageTargetInputs(){
-  const labels = ['Stage 1: DEV→Audit','Stage 2: DEV→3D','Stage 3: DEV→QHSE','Stage 4: QHSE→TSM','Stage 5: TSM→Trigger'];
+  const labels = [
+    'S1: DEV Complete','S2: DEV Approved','S3: 3D Design',
+    'S4: QHSE','S5: TSM Layout','S6: TSM Verified',
+    'S7: Finance','S8: Anshuman','S9: Client Appr','S10: HOTO 2'
+  ];
   document.getElementById('tatTargetRow').innerHTML = labels.map((l,i)=>
     `<div class="tat-target-item">
       <label>${l} (days)</label>
@@ -897,46 +941,101 @@ function updateStageTarget(idx, val){
 }
 
 function buildStageTATData(){
-  const devTask = DATA['DEV Task'] || [];
-  const d3 = DATA['3D Process'] || [];
-  const hoto1 = DATA['HOTO 1'] || [];
+  const devTask  = DATA['DEV Task']   || [];
+  const d3       = DATA['3D Process'] || [];
+  const hoto1    = DATA['HOTO 1']     || [];
+  const hoto2    = DATA['HOTO 2']     || [];
+  const approval = DATA['Approval']   || [];
 
-  const devGrouped = {};
-  devTask.forEach(r => { const pn = g(r,'Project Name'); if(pn){ (devGrouped[pn] = devGrouped[pn] || []).push(r); } });
-  const d3Grouped = groupD3ByProject(d3);
-  const h1Map = {};
-  hoto1.forEach(r => { const pn = g(r,'Project name'); if(pn) h1Map[pn] = r; });
+  // Group every sheet by project name
+  const devGrouped  = {};
+  devTask.forEach(r  => { const pn=g(r,'Project Name'); if(pn)(devGrouped[pn]=devGrouped[pn]||[]).push(r); });
+  const d3Grouped   = groupD3ByProject(d3);
+  const h1Map       = {};
+  hoto1.forEach(r   => { const pn=g(r,'Project name'); if(pn) h1Map[pn]=r; });
+  const h2Grouped   = {};
+  hoto2.forEach(r   => { const pn=g(r,'Project name'); if(pn)(h2Grouped[pn]=h2Grouped[pn]||[]).push(r); });
+  const apprGrouped = {};
+  approval.forEach(r=> { const pn=g(r,'Lead name');    if(pn)(apprGrouped[pn]=apprGrouped[pn]||[]).push(r); });
 
-  const allNames = new Set([...Object.keys(devGrouped), ...Object.keys(d3Grouped), ...Object.keys(h1Map)]);
+  // HOTO 1 is the master — only process projects that exist here
+  const allNames = new Set(Object.keys(h1Map));
 
   const rows = [...allNames].map(pn => {
-    const devRows = devGrouped[pn] || [];
-    const d3Rows = d3Grouped[pn] || [];
-    const h1Row = h1Map[pn];
+    const devRows  = devGrouped[pn]  || [];
+    const d3Rows   = d3Grouped[pn]   || [];
+    const h1Row    = h1Map[pn];
+    const h2Rows   = h2Grouped[pn]   || [];
+    const apprRows = apprGrouped[pn] || [];
 
-    const devAssignedRow = devRows.find(r => g(r,'Assigned Timestamp')) || devRows[0];
-    const devReceivedDate = devAssignedRow ? g(devAssignedRow,'Assigned Timestamp') : '';
-    const devApprovedRow = devRows.find(r => g(r,'Audit Completed on'));
+    // ── date anchors ──────────────────────────────────────────────────
+    // S1 start : DEV Task col H  'Assigned Timestamp'
+    const devAssignedRow = devRows.find(r=>gCol(r,'H')) || devRows[0];
+    const h1CompDate     = devAssignedRow ? gCol(devAssignedRow,'H') : '';
+    // S1/S2 mid: DEV Task col L  'DEV Completed Timestamp'
+    const devCompRow   = devRows.find(r=>gCol(r,'L'));
+    const devCompDate  = devCompRow ? gCol(devCompRow,'L') : '';
+    // S2/S3 mid: DEV Task col T  'Audit Completed On'
+    const auditRow     = devRows.find(r=>gCol(r,'T'));
+    const auditDate    = auditRow ? gCol(auditRow,'T') : '';
+    // S3/S4 mid: 3D Process col J '3D Approved on'
+    const d3ApprRow    = d3Rows.find(r=>gCol(r,'J'));
+    const d3ApprDate   = d3ApprRow ? gCol(d3ApprRow,'J') : '';
+    // S4/S5 mid: 3D Process col V 'QHSE Completed Date'
+    const qhseRow      = d3Rows.find(r=>gCol(r,'V'));
+    const qhseDate     = qhseRow ? gCol(qhseRow,'V') : '';
+    // S5/S6 mid: 3D Process col AM 'TSM Approved On'
+    // Prefer a row that has BOTH AM and AO (same revision row), fall back to any row with AM
+    const s6FullRow    = d3Rows.find(r => gCol(r,'AM') && gCol(r,'AO'));
+    const tsmLayoutRow = s6FullRow || d3Rows.find(r => gCol(r,'AM'));
+    const tsmLayoutDate= tsmLayoutRow ? gCol(tsmLayoutRow,'AM') : '';
+    // S6/S7 mid: 3D Process col AO 'TSM Completed Date'
+    // Use the same row as tsmLayoutRow when possible for date consistency
+    const tsmVerRow    = s6FullRow || d3Rows.find(r => gCol(r,'AO'));
+    const tsmVerDate   = tsmVerRow ? gCol(tsmVerRow,'AO') : '';
+    // Stage 6 start: use AM if available, otherwise fall back to QHSE date so AO data is never lost
+    const stage6Start  = tsmLayoutDate || qhseDate;
+    // S7 start : 3D Process col BI '3D Design Admin Approval Timestamp'
+    const adminApprRow = d3Rows.find(r=>gCol(r,'BI'));
+    const adminApprDate= adminApprRow ? gCol(adminApprRow,'BI') : '';
+    // S7/S8 mid: Approval col H  'Finance Team Approved On'
+    const finRow       = apprRows.find(r=>gCol(r,'H'));
+    const finDate      = finRow ? gCol(finRow,'H') : '';
+    // S8/S9 mid: Approval col K  'Anshuman Approved On'
+    const anshRow      = apprRows.find(r=>gCol(r,'K'));
+    const anshDate     = anshRow ? gCol(anshRow,'K') : '';
+    // S9/S10 mid: 3D Process col BC '3D Design Approval Timestamp'
+    const clientApprRow= d3Rows.find(r=>gCol(r,'BC'));
+    const clientApprDate= clientApprRow ? gCol(clientApprRow,'BC') : '';
+    // S10 end : HOTO 2 col P 'HOTO 2 completed On'
+    const h2DoneRow    = h2Rows.find(r=>gCol(r,'P'));
+    const h2DoneDate   = h2DoneRow ? gCol(h2DoneRow,'P') : '';
 
-    const d3ApprRow = d3Rows.find(r => g(r,'3D Approved on'));
-    const qhseRow = d3Rows.find(r => g(r,'QHSE Status') === 'Approved' && g(r,'QHSE Completed Date'));
-    const tsmRow = d3Rows.find(r => (g(r,'TSM Verification Status')||'').trim().toLowerCase() === 'approved' && g(r,'TSM Completed Date'));
+    // S1 : HOTO 1 is the master anchor — always 0 days (starting reference point)
+    const stage1  = h1Row ? 0 : null;
+    const stage2  = (devCompDate  && auditDate)     ? tatDaysSimple(devCompDate,  auditDate)     : null;
+    const stage3  = (auditDate    && d3ApprDate)    ? tatDaysSimple(auditDate,    d3ApprDate)    : null;
+    const stage4  = (d3ApprDate   && qhseDate)      ? tatDaysSimple(d3ApprDate,   qhseDate)      : null;
+    const stage5  = (qhseDate     && tsmLayoutDate) ? tatDaysSimple(qhseDate,     tsmLayoutDate) : null;
+    const stage6  = (stage6Start  && tsmVerDate)    ? tatDaysSimple(stage6Start,  tsmVerDate)    : null;
+    const stage7  = (adminApprDate&& finDate)       ? tatDaysSimple(adminApprDate,finDate)       : null;
+    const stage8  = (finDate      && anshDate)      ? tatDaysSimple(finDate,      anshDate)      : null;
+    const stage9  = (anshDate     && clientApprDate)? tatDaysSimple(anshDate,     clientApprDate): null;
+    const stage10 = (clientApprDate&& h2DoneDate)   ? tatDaysSimple(clientApprDate,h2DoneDate)   : null;
 
-    const designerRow = d3Rows.find(r => gCol(r,'D')) || d3Rows[0];
-    const designerNamesList = designerRow ? getDesignerNames(designerRow) : [];
-    const designer = designerNamesList.length ? designerNamesList.join(', ') : 'Unassigned';
+    // Designer (column D of 3D Process)
+    const designerRow = d3Rows.find(r=>gCol(r,'D')) || d3Rows[0];
+    const designerNames = designerRow ? getDesignerNames(designerRow) : [];
+    const designer = designerNames.length ? designerNames.join(', ') : 'Unassigned';
     const city = h1Row ? g(h1Row,'City') : '';
 
-    const stage1 = (devReceivedDate && devApprovedRow) ? tatDaysSimple(devReceivedDate, g(devApprovedRow,'Audit Completed on')) : null;
-    const stage2 = (devReceivedDate && d3ApprRow) ? tatDaysSimple(devReceivedDate, g(d3ApprRow,'3D Approved on')) : null;
-    const stage3 = (devReceivedDate && qhseRow) ? tatDaysSimple(devReceivedDate, g(qhseRow,'QHSE Completed Date')) : null;
-    const stage4 = (qhseRow && tsmRow) ? tatDaysSimple(g(qhseRow,'QHSE Completed Date'), g(tsmRow,'TSM Completed Date')) : null;
-    const stage5 = (tsmRow && h1Row) ? tatDaysSimple(g(tsmRow,'TSM Completed Date'), g(h1Row,'Approval Email Sent On')) : null;
-
-    return { name: pn, designer, city, stage1, stage2, stage3, stage4, stage5 };
+    return { name:pn, designer, city, stage1, stage2, stage3, stage4, stage5, stage6, stage7, stage8, stage9, stage10 };
   });
 
-  return rows.filter(r => r.stage1!=null || r.stage2!=null || r.stage3!=null || r.stage4!=null || r.stage5!=null);
+  return rows.filter(r =>
+    r.stage1!=null||r.stage2!=null||r.stage3!=null||r.stage4!=null||r.stage5!=null||
+    r.stage6!=null||r.stage7!=null||r.stage8!=null||r.stage9!=null||r.stage10!=null
+  );
 }
 
 function tatBadge(actual, target){
@@ -949,7 +1048,10 @@ function tatDays(startStr, endStr){
   const sd = parseD(startStr);
   const ed = parseD(endStr);
   if(!sd || !ed) return null;
-  const diff = Math.round((ed - sd) / 86400000);
+  // Strip time — compare date only to avoid midnight vs timestamp mismatches
+  const sdDay = new Date(sd.getFullYear(), sd.getMonth(), sd.getDate());
+  const edDay = new Date(ed.getFullYear(), ed.getMonth(), ed.getDate());
+  const diff = Math.round((edDay - sdDay) / 86400000);
   return diff >= 0 ? diff : null;
 }
 function avgOf(arr){
@@ -1160,8 +1262,58 @@ function renderMatrix(mode){
   document.getElementById('paMatrixTable').innerHTML=html;
 }
 
-// ===== AGING =====
-// ===== TAB 9: DESIGNER ANALYSIS (merged table: project detail + stage TAT, filterable by designer) =====
+// ===== AVG TAT TABLE on Complete Projects tab =====
+function renderAvgTatTable(){
+  const stageData = buildStageTATData();
+  const stageColors = STAGE_COLORS;
+  const stageKeys   = STAGE_KEYS;
+  const stageLabels = STAGE_LABELS;
+
+  // Avg KPI cards
+  const avgs = stageKeys.map(sk => avgOf(stageData.map(r=>r[sk]).filter(v=>v!=null)));
+  const counts = stageKeys.map(sk => stageData.filter(r=>r[sk]!=null).length);
+  document.getElementById('avgTatKpis').innerHTML = stageKeys.map((sk,i) =>
+    kpiHTML(stageColors[i], 'Avg '+stageLabels[i], avgs[i]!=null ? avgs[i].toFixed(1)+'<span style="font-size:12px;color:var(--tm)"> days</span>' : '—', counts[i]+' projects measured')
+  ).join('');
+
+  // Sort by total TAT desc (most data first, then most elapsed)
+  const sorted = [...stageData].sort((a,b)=>{
+    const ta = stageKeys.reduce((s,k)=>s+(a[k]??0),0);
+    const tb = stageKeys.reduce((s,k)=>s+(b[k]??0),0);
+    return tb - ta;
+  });
+
+  const fmt = (v, avg) => {
+    if(v==null) return '<span style="color:var(--tm)">—</span>';
+    if(avg==null) return `<span style="font-family:'Space Grotesk',sans-serif;font-weight:600">${v}d</span>`;
+    const cls = v <= avg ? 'ok' : 'over';
+    return `<span class="tat-badge ${cls}">${v}d</span>`;
+  };
+
+  document.getElementById('avgTatTableBody').innerHTML = sorted.map(r => {
+    const total = stageKeys.reduce((s,k)=>s+(r[k]??0),0);
+    const hasAny = stageKeys.some(k=>r[k]!=null);
+    if(!hasAny) return '';
+    const totalHasAll = stageKeys.every(k=>r[k]!=null);
+    return `<tr>
+      <td style="font-weight:500">${r.name}</td>
+      <td>${r.city||'—'}</td>
+      ${stageKeys.map((sk,i)=>` <td>${fmt(r[sk], avgs[i])}</td>`).join('')}
+      <td style="font-family:'Space Grotesk',sans-serif;font-weight:700;color:${totalHasAll?'var(--ac)':'var(--tm)'}">
+        ${totalHasAll ? total+'d' : '—'}
+      </td>
+    </tr>`;
+  }).filter(Boolean).join('') +
+  `<tr style="border-top:2px solid var(--bd);background:rgba(59,130,246,.06)">
+    <td style="font-weight:700;color:var(--bl)">Average</td><td></td>
+    ${stageKeys.map((sk,i)=>`<td style="font-weight:700;color:${stageColors[i]}">${avgs[i]!=null?avgs[i].toFixed(1)+'d':'—'}</td>`).join('')}
+    <td style="font-weight:700;color:var(--ac)">${
+      avgs.every(a=>a!=null) ? avgs.reduce((s,a)=>s+a,0).toFixed(1)+'d' : '—'
+    }</td>
+  </tr>`;
+}
+
+
 function renderDesignerTab(){
   renderStageTargetInputs();
 
@@ -1190,9 +1342,10 @@ function renderDesignerTab(){
     const cap = h1row ? num(g(h1row,'Project Size (Capacity)')) : 0;
     const status = h1row ? g(h1row,'HOTO 1 Status') : '';
     const sd = stageMap[pn] || {};
+    const stageVals = {};
+    STAGE_KEYS.forEach(sk => { stageVals[sk] = sd[sk] ?? null; });
     finalNames.forEach(designer => {
-      flat.push({ designer, name: pn, city, cap, status,
-        stage1: sd.stage1 ?? null, stage2: sd.stage2 ?? null, stage3: sd.stage3 ?? null, stage4: sd.stage4 ?? null, stage5: sd.stage5 ?? null });
+      flat.push({ designer, name: pn, city, cap, status, ...stageVals });
     });
   });
 
@@ -1216,9 +1369,9 @@ function renderDesignerTab(){
   }).join('') : '<div style="font-size:11px;color:var(--tm)">No data available</div>';
 
   // ---- KPI cards (computed on unique projects, not duplicated rows) ----
-  const stageKeys = ['stage1','stage2','stage3','stage4','stage5'];
-  const stageColors = ['var(--bl)','var(--pr)','var(--gn)','var(--cy)','var(--pk)'];
-  const stageLabels = ['Stage 1','Stage 2','Stage 3','Stage 4','Stage 5'];
+  const stageKeys = STAGE_KEYS;
+  const stageColors = STAGE_COLORS;
+  const stageLabels = STAGE_LABELS;
   document.getElementById('stageTatKpis').innerHTML = stageKeys.map((sk,i)=>{
     const vals = stageData.map(r=>r[sk]).filter(v=>v!=null);
     const within = vals.filter(v=>v<=stageTargets[i]).length;
@@ -1308,7 +1461,10 @@ function filterDesignerTable(designer){
 function tatDaysSimple(startStr, endStr){
   const sd = parseD(startStr), ed = parseD(endStr);
   if(!sd || !ed) return null;
-  const diff = Math.round((ed - sd) / 86400000);
+  // Strip time component so "2/11 0:00:00" vs "2/11 11:00:16" both read as same day
+  const sdDay = new Date(sd.getFullYear(), sd.getMonth(), sd.getDate());
+  const edDay = new Date(ed.getFullYear(), ed.getMonth(), ed.getDate());
+  const diff = Math.round((edDay - sdDay) / 86400000);
   return diff >= 0 ? diff : null;
 }
 function tatBucketBars(tatArr, containerId){
