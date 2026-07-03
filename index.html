@@ -522,7 +522,6 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
         <select id="designerFilterSelectTsm" class="designer-select" onchange="filterDesignerTable('tsm',this.value)"></select>
       </div>
     </div>
-    <div class="tat-target-row" id="tatTargetRow"></div>
     <div class="kr" id="stageTatKpis" style="margin-bottom:14px"></div>
     <div class="scr" style="max-height:600px">
       <table class="mt">
@@ -531,10 +530,10 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
           <th>TSM Designer<br><span style="font-weight:400;color:var(--tm)">DS4–DS5</span></th>
           <th>Project</th><th>City</th><th>Capacity (kWp)</th>
           <th>DS1<br><span style="font-weight:400;color:var(--tm)">DEV→Audit</span></th>
-          <th>DS2<br><span style="font-weight:400;color:var(--tm)">DEV→3D Approval</span></th>
-          <th>DS3<br><span style="font-weight:400;color:var(--tm)">DEV→QHSE</span></th>
+          <th>DS2<br><span style="font-weight:400;color:var(--tm)">Audit→3D Approved</span></th>
+          <th>DS3<br><span style="font-weight:400;color:var(--tm)">3D→QHSE</span></th>
           <th>DS4<br><span style="font-weight:400;color:var(--tm)">QHSE→TSM Upload</span></th>
-          <th>DS5<br><span style="font-weight:400;color:var(--tm)">TSM Upload→Approved</span></th>
+          <th>DS5<br><span style="font-weight:400;color:var(--tm)">TSM Appr→Trigger</span></th>
         </tr></thead>
         <tbody id="designerDetailTable"></tbody>
       </table>
@@ -597,7 +596,25 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
   <div class="cd"><div class="ct"><div class="dot" style="background:var(--gn)"></div>Project Detail</div><div class="scr" style="max-height:500px"><table class="mt" id="sa14Table"></table></div></div>
 </div>
 
-</div></div> (city/capacity drill-down) -->
+</div></div>
+
+<!-- Designer project detail modal -->
+<div id="dsModal" class="pm-overlay" onclick="if(event.target===this)closeDsModal()">
+  <div class="pm-box" style="max-width:720px">
+    <div class="pm-head">
+      <div>
+        <div class="pm-title" id="dsModalTitle"></div>
+        <div class="pm-sub" id="dsModalSub"></div>
+      </div>
+      <span class="pm-close" onclick="closeDsModal()">✕</span>
+    </div>
+    <div class="pm-body">
+      <div id="dsModalContent"></div>
+    </div>
+  </div>
+</div>
+
+<!-- City/capacity project drill-down modal -->
 <div id="projModal" class="pm-overlay" onclick="if(event.target===this)closeProjModal()">
   <div class="pm-box">
     <div class="pm-head">
@@ -1004,10 +1021,19 @@ function renderProjectAnalysis(){
 }
 
 // ===== STAGE TAT vs TARGET (5-stage process, designer-wise) =====
-let stageTargets = [3, 5, 7, 3, 3]; // 5 designer stages — edit via UI inputs
+let stageTargets = [3, 5, 7, 3, 3]; // 5 designer stages — edit via UI inputs (fallback when no capacity match)
 const DS_KEYS   = ['ds1','ds2','ds3','ds4','ds5'];
-const DS_LABELS = ['DEV→Audit','DEV→3D Appr','DEV→QHSE','QHSE→TSM Upload','TSM Upload→Approved'];
+const DS_LABELS = ['DEV→Audit','Audit→3D Appr','3D→QHSE','QHSE→TSM Upload','TSM Appr→Trigger'];
 const DS_COLORS = ['var(--bl)','var(--pr)','var(--gn)','var(--cy)','var(--pk)'];
+
+// Capacity-based SLA targets per stage (from design process definition)
+// Alpha: 10–30 kW | Beta: 30–100 kW | Gamma: 100–200 kW | Hulk: >200 kW
+const DS_CAP_TARGETS = {
+  'Alpha': { ds1:3,  ds2:3,  ds3:1, ds4:2, ds5:5  },
+  'Beta':  { ds1:3,  ds2:6,  ds3:2, ds4:3, ds5:5  },
+  'Gamma': { ds1:4,  ds2:10, ds3:2, ds4:3, ds5:8  },
+  'Hulk':  { ds1:5,  ds2:18, ds3:2, ds4:5, ds5:12 },
+};
 const STAGE_KEYS   = ['stage1','stage2','stage3','stage4','stage5','stage6','stage7','stage8','stage9','stage10'];
 const STAGE_LABELS = ['HOTO 1','DEV Complete','3D Design','QHSE','TSM Layout','TSM Verified','Finance','Anshuman','Client Appr','HOTO 2'];
 const STAGE_LONG   = ['HOTO 1 (0d anchor)','DEV Complete→Audit','Audit→3D Approved','3D→QHSE','QHSE→TSM Layout','TSM Layout→TSM Verified','Admin→Finance','Finance→Anshuman','Anshuman→Client','Client→HOTO 2'];
@@ -1016,8 +1042,8 @@ let currentDesignerChartFilter = null; // tracks which designer bar is active in
 
 function renderStageTargetInputs(){
   const labels = [
-    'DS1: DEV→Audit','DS2: DEV→3D Appr','DS3: DEV→QHSE',
-    'DS4: QHSE→TSM Upload','DS5: TSM Upload→Approved'
+    'DS1: DEV→Audit','DS2: Audit→3D Appr','DS3: 3D→QHSE',
+    'DS4: QHSE→TSM Upload','DS5: TSM Appr→Trigger'
   ];
   document.getElementById('tatTargetRow').innerHTML = labels.map((l,i)=>
     `<div class="tat-target-item">
@@ -1036,58 +1062,66 @@ function buildDesignerStageTATData(){
   const devTask  = DATA['DEV Task']   || [];
   const d3       = DATA['3D Process'] || [];
   const hoto1    = DATA['HOTO 1']     || [];
+  const approval = DATA['Approval']   || [];
 
   const devGrouped = {};
   devTask.forEach(r=>{ const pn=g(r,'Project Name');if(pn)(devGrouped[pn]=devGrouped[pn]||[]).push(r); });
   const d3Grouped = groupD3ByProject(d3);
   const h1Map = {};
   hoto1.forEach(r=>{ const pn=g(r,'Project name');if(pn) h1Map[pn]=r; });
+  const apprGrouped = {};
+  approval.forEach(r=>{ const pn=g(r,'Lead name');if(pn)(apprGrouped[pn]=apprGrouped[pn]||[]).push(r); });
 
   const allNames = new Set(Object.keys(h1Map));
 
   return [...allNames].map(pn=>{
-    const devRows = devGrouped[pn] || [];
-    const d3Rows  = d3Grouped[pn]  || [];
-    const h1Row   = h1Map[pn];
+    const devRows  = devGrouped[pn]  || [];
+    const d3Rows   = d3Grouped[pn]   || [];
+    const h1Row    = h1Map[pn];
+    const apprRows = apprGrouped[pn] || [];
 
-    // DS1 start = DEV Task col H 'Assigned Timestamp'
-    const devAssigned = (devRows.find(r=>gCol(r,'H'))||devRows[0]);
-    const devStart = devAssigned ? gCol(devAssigned,'H') : '';
+    // Helper: get the LAST (most recent / final revision) row that has a value in the given column
+    const last = (rows, col) => [...rows].reverse().find(r => gCol(r, col));
 
-    // DS1 end   = DEV Task col T 'Audit Completed On'
-    const auditRow = devRows.find(r=>gCol(r,'T'));
-    const auditDate = auditRow ? gCol(auditRow,'T') : '';
+    // DS1: DEV Task col H 'Assigned Timestamp' → DEV Task col T 'Audit Completed On'
+    const devAssigned = last(devRows, 'H') || devRows[0];
+    const devStart    = devAssigned ? gCol(devAssigned,'H') : '';
+    const auditRow    = last(devRows, 'T');
+    const auditDate   = auditRow ? gCol(auditRow,'T') : '';
 
-    // DS2 end   = 3D Process col J '3D Approved on'
-    const d3ApprRow = d3Rows.find(r=>gCol(r,'J'));
+    // DS2: 3D Process col E '3D Design Start Time (DEV Audit Approval / Last Rejection)' → 3D Process col J '3D Approved on'
+    const d3StartRow = last(d3Rows, 'E');
+    const d3StartDate = d3StartRow ? gCol(d3StartRow,'E') : '';
+    const d3ApprRow  = last(d3Rows, 'J');
     const d3ApprDate = d3ApprRow ? gCol(d3ApprRow,'J') : '';
 
-    // DS3 end   = 3D Process col V 'QHSE Completed Date'
-    const qhseRow = d3Rows.find(r=>gCol(r,'V'));
+    // DS3: 3D Process col J '3D Approved on' → 3D Process col V 'QHSE Completed Date'
+    const qhseRow  = last(d3Rows, 'V');
     const qhseDate = qhseRow ? gCol(qhseRow,'V') : '';
 
-    // DS4 end   = 3D Process col AE 'TSM Layouts Upload Timestamp'
-    const tsmUploadRow = d3Rows.find(r=>gCol(r,'AE'));
+    // DS4: 3D Process col V 'QHSE Completed Date' → 3D Process col AE 'TSM Layouts Upload Timestamp'
+    const tsmUploadRow  = last(d3Rows, 'AE');
     const tsmUploadDate = tsmUploadRow ? gCol(tsmUploadRow,'AE') : '';
 
-    // DS5 end   = 3D Process col AH 'TSM Approved On'
-    const tsmApprRow = d3Rows.find(r=>gCol(r,'AH'));
+    // DS5: 3D Process col AH 'TSM Approved On' → Approval sheet col D 'Design Confirmed On'
+    const tsmApprRow  = last(d3Rows, 'AH');
     const tsmApprDate = tsmApprRow ? gCol(tsmApprRow,'AH') : '';
+    const triggerRow  = last(apprRows, 'D');
+    const triggerDate = triggerRow ? gCol(triggerRow,'D') : '';
 
-    const ds1 = (devStart && auditDate)     ? tatDaysSimple(devStart, auditDate)     : null;
-    const ds2 = (devStart && d3ApprDate)    ? tatDaysSimple(devStart, d3ApprDate)    : null;
-    const ds3 = (devStart && qhseDate)      ? tatDaysSimple(devStart, qhseDate)      : null;
-    const ds4 = (qhseDate && tsmUploadDate) ? tatDaysSimple(qhseDate, tsmUploadDate) : null;
-    const ds5 = (tsmUploadDate && tsmApprDate) ? tatDaysSimple(tsmUploadDate, tsmApprDate) : null;
+    const ds1 = (devStart    && auditDate)     ? tatDaysSimple(devStart,    auditDate)     : null;
+    const ds2 = (d3StartDate && d3ApprDate)    ? tatDaysSimple(d3StartDate, d3ApprDate)    : null;
+    const ds3 = (d3ApprDate  && qhseDate)      ? tatDaysSimple(d3ApprDate,  qhseDate)      : null;
+    const ds4 = (qhseDate    && tsmUploadDate) ? tatDaysSimple(qhseDate,    tsmUploadDate) : null;
+    const ds5 = (tsmApprDate && triggerDate)   ? tatDaysSimple(tsmApprDate, triggerDate)   : null;
 
-    const designerRow = d3Rows.find(r=>gCol(r,'D')) || d3Rows[0];
-    const designerNames3d = designerRow ? getDesignerNames(designerRow) : [];
-    const designer3d = designerNames3d.length ? designerNames3d.join(', ') : 'Unassigned';
-
-    // TSM Layout Creator — column AB
+    // 3D Designer from col D, TSM Layout Creator from col AB
+    const designerRow   = d3Rows.find(r=>gCol(r,'D'))  || d3Rows[0];
     const tsmDesignerRow = d3Rows.find(r=>gCol(r,'AB')) || d3Rows[0];
-    const designerNamesTsm = tsmDesignerRow ? splitDesigners(gCol(tsmDesignerRow,'AB')) : [];
-    const designerTsm = designerNamesTsm.length ? designerNamesTsm.join(', ') : designer3d; // fallback to 3D designer if blank
+    const designerNames3d  = designerRow    ? getDesignerNames(designerRow)                    : [];
+    const designerNamesTsm = tsmDesignerRow ? splitDesigners(gCol(tsmDesignerRow,'AB'))        : [];
+    const designer3d  = designerNames3d.length  ? designerNames3d.join(', ')  : 'Unassigned';
+    const designerTsm = designerNamesTsm.length ? designerNamesTsm.join(', ') : designer3d;
 
     const city = h1Row ? g(h1Row,'City') : '';
 
@@ -1197,6 +1231,20 @@ function tatBadge(actual, target){
   if(actual == null) return '<span class="tat-badge na">—</span>';
   const cls = actual <= target ? 'ok' : 'over';
   return `<span class="tat-badge ${cls}">${actual}d</span>`;
+}
+
+// Capacity-aware badge: shows actual days + delta vs SLA target
+function tatCapBadge(actual, target){
+  if(actual == null) return '<span class="tat-badge na">—</span>';
+  if(target == null) return `<span class="tat-badge ok">${actual}d</span>`;
+  const delta = actual - target;
+  if(delta === 0){
+    return `<span class="tat-badge ok" title="On time · target ${target}d">${actual}d <span style="font-size:9px;opacity:.8">✓</span></span>`;
+  } else if(delta > 0){
+    return `<span class="tat-badge over" title="Target ${target}d">${actual}d <span style="font-size:9px;font-weight:600">+${delta} late</span></span>`;
+  } else {
+    return `<span class="tat-badge ok" title="Target ${target}d">${actual}d <span style="font-size:9px;font-weight:600">${delta} early</span></span>`;
+  }
 }
 
 function tatDays(startStr, endStr){
@@ -1760,7 +1808,6 @@ function renderAvgTatTable(){
 
 
 function renderDesignerTab(){
-  renderStageTargetInputs();
 
   const d3 = DATA['3D Process'] || [];
   const hoto1 = DATA['HOTO 1'] || [];
@@ -1773,7 +1820,11 @@ function renderDesignerTab(){
   const stageData = buildDesignerStageTATData();
   window._stageTatDataRaw = stageData;
   const stageMap = {};
-  stageData.forEach(s => { stageMap[s.name] = s; });
+  stageData.forEach(s => {
+    const h1r = h1Map[s.name];
+    s.cap = h1r ? num(g(h1r,'Project Size (Capacity)')) : 0;
+    stageMap[s.name] = s;
+  });
 
   // Flat designer-project rows (one row per designer per project) with stage TAT attached for display
   const flat = [];
@@ -1824,9 +1875,15 @@ function renderDesignerTab(){
   const stageLabels = DS_LABELS;
   document.getElementById('stageTatKpis').innerHTML = stageKeys.map((sk,i)=>{
     const vals = stageData.map(r=>r[sk]).filter(v=>v!=null);
-    const within = vals.filter(v=>v<=stageTargets[i]).length;
+    // Check against capacity-based target per project
+    const within = stageData.filter(r=>{
+      if(r[sk]==null) return false;
+      const t = DS_CAP_TARGETS[capBucket(r.cap)] || {};
+      const target = t[sk] ?? stageTargets[i];
+      return r[sk] <= target;
+    }).length;
     const avg = avgOf(vals);
-    return kpiHTML(stageColors[i], stageLabels[i]+' On-Target', vals.length?pct(within,vals.length)+'%':'—', `Avg ${avg!=null?avg.toFixed(1):'—'}d · Target ${stageTargets[i]}d`);
+    return kpiHTML(stageColors[i], stageLabels[i]+' On-Target', vals.length?pct(within,vals.length)+'%':'—', `Avg ${avg!=null?avg.toFixed(1):'—'}d · SLA varies by capacity`);
   }).join('');
 
   // ---- Filter dropdowns (3D designer and TSM designer) ----
@@ -1915,18 +1972,22 @@ function filterDesignerTable(designer, designerTsmFilter){
   const sameDesigner = r => r.designer3d === r.designerTsm;
 
   document.getElementById('designerDetailTable').innerHTML =
-    filtered.map(r=>`<tr>
+    filtered.map(r=>{
+      const targets = DS_CAP_TARGETS[capBucket(r.cap)] || {};
+      const safe = r.name.replace(/'/g,"\\'");
+      return `<tr>
       <td style="font-weight:500">${r.designer3d}</td>
       <td style="font-weight:500;${sameDesigner(r)?'color:var(--tm)':''}">${sameDesigner(r)?'<span style="color:var(--tm)">same</span>':r.designerTsm}</td>
-      <td style="font-weight:500">${r.name}</td>
+      <td style="font-weight:500;cursor:pointer;color:var(--brand-cyan);text-decoration:underline" onclick="openDsModal('${safe}')">${r.name}</td>
       <td>${r.city||'—'}</td>
       <td>${r.cap||'—'}</td>
-      <td>${tatBadge(r.ds1, stageTargets[0])}</td>
-      <td>${tatBadge(r.ds2, stageTargets[1])}</td>
-      <td>${tatBadge(r.ds3, stageTargets[2])}</td>
-      <td>${tatBadge(r.ds4, stageTargets[3])}</td>
-      <td>${tatBadge(r.ds5, stageTargets[4])}</td>
-    </tr>`).join('') +
+      <td style="cursor:pointer" onclick="openDsModal('${safe}','ds1')">${tatCapBadge(r.ds1, targets.ds1)}</td>
+      <td style="cursor:pointer" onclick="openDsModal('${safe}','ds2')">${tatCapBadge(r.ds2, targets.ds2)}</td>
+      <td style="cursor:pointer" onclick="openDsModal('${safe}','ds3')">${tatCapBadge(r.ds3, targets.ds3)}</td>
+      <td style="cursor:pointer" onclick="openDsModal('${safe}','ds4')">${tatCapBadge(r.ds4, targets.ds4)}</td>
+      <td style="cursor:pointer" onclick="openDsModal('${safe}','ds5')">${tatCapBadge(r.ds5, targets.ds5)}</td>
+    </tr>`;
+    }).join('') +
     `<tr style="border-top:2px solid var(--bl);background:rgba(59,130,246,.06)">
       <td colspan="4" style="font-weight:700;color:var(--bl)">Total</td>
       <td style="font-weight:700;color:var(--bl)">${totalCap.toFixed(1)} kWp</td>
@@ -1934,6 +1995,119 @@ function filterDesignerTable(designer, designerTsmFilter){
     </tr>`;
 }
 
+
+// ===== DESIGNER PROJECT DETAIL MODAL =====
+function openDsModal(projectName, highlightStage){
+  const devTask  = DATA['DEV Task']   || [];
+  const d3       = DATA['3D Process'] || [];
+  const hoto1    = DATA['HOTO 1']     || [];
+  const approval = DATA['Approval']   || [];
+  const d3Groups  = groupD3ByProject(d3);
+
+  const devRows  = devTask.filter(r=>g(r,'Project Name')===projectName);
+  const d3Rows   = d3Groups[projectName] || [];
+  const h1Row    = hoto1.find(r=>g(r,'Project name')===projectName);
+  const apprRows = approval.filter(r=>g(r,'Lead name')===projectName);
+
+  // Get last-entry dates (same logic as buildDesignerStageTATData)
+  const last = (rows, col) => [...rows].reverse().find(r=>gCol(r,col));
+  const devAssigned   = last(devRows,'H')  || devRows[0];
+  const auditRow      = last(devRows,'T');
+  const d3StartRow    = last(d3Rows,'E');
+  const d3ApprRow     = last(d3Rows,'J');
+  const qhseRow       = last(d3Rows,'V');
+  const tsmUploadRow  = last(d3Rows,'AE');
+  const tsmApprRow    = last(d3Rows,'AH');
+  const triggerRow    = last(apprRows,'D');
+
+  const cap     = h1Row ? num(g(h1Row,'Project Size (Capacity)')) : 0;
+  const bucket  = capBucket(cap) || 'Unknown';
+  const targets = DS_CAP_TARGETS[bucket] || {};
+  const city    = h1Row ? g(h1Row,'City') : '—';
+
+  const d3DesignerRow = d3Rows.find(r=>gCol(r,'D')) || d3Rows[0];
+  const tsmDesignerRow = d3Rows.find(r=>gCol(r,'AB')) || d3Rows[0];
+  const designer3d = d3DesignerRow  ? (getDesignerNames(d3DesignerRow).join(', ')  || '—') : '—';
+  const designerTsm= tsmDesignerRow ? (splitDesigners(gCol(tsmDesignerRow,'AB')).join(', ') || designer3d) : '—';
+
+  const fmtDate = v => v ? `<span style="color:var(--tx)">${v}</span>` : '<span style="color:var(--tm)">—</span>';
+
+  const stages = [
+    {
+      key:'ds1', label:'DS1 — DEV → Audit Approval',
+      startLabel:'DEV Assigned Timestamp', startVal: devAssigned ? gCol(devAssigned,'H') : '',
+      endLabel:  'Audit Completed On',     endVal:   auditRow    ? gCol(auditRow,'T')    : '',
+      designer: designer3d
+    },{
+      key:'ds2', label:'DS2 — Audit → 3D Design Approved',
+      startLabel:'3D Design Start Time',   startVal: d3StartRow  ? gCol(d3StartRow,'E')  : '',
+      endLabel:  '3D Approved On',         endVal:   d3ApprRow   ? gCol(d3ApprRow,'J')   : '',
+      designer: designer3d
+    },{
+      key:'ds3', label:'DS3 — 3D Approved → QHSE Approved',
+      startLabel:'3D Approved On',         startVal: d3ApprRow   ? gCol(d3ApprRow,'J')   : '',
+      endLabel:  'QHSE Completed Date',    endVal:   qhseRow     ? gCol(qhseRow,'V')      : '',
+      designer: designer3d
+    },{
+      key:'ds4', label:'DS4 — QHSE → TSM Layout Upload',
+      startLabel:'QHSE Completed Date',   startVal: qhseRow      ? gCol(qhseRow,'V')      : '',
+      endLabel:  'TSM Layouts Upload',     endVal:   tsmUploadRow ? gCol(tsmUploadRow,'AE'): '',
+      designer: designerTsm
+    },{
+      key:'ds5', label:'DS5 — TSM Approved → Design Trigger',
+      startLabel:'TSM Approved On',       startVal: tsmApprRow   ? gCol(tsmApprRow,'AH')  : '',
+      endLabel:  'Design Confirmed On',   endVal:   triggerRow   ? gCol(triggerRow,'D')    : '',
+      designer: designerTsm
+    }
+  ];
+
+  document.getElementById('dsModalTitle').textContent = projectName;
+  document.getElementById('dsModalSub').innerHTML =
+    `${city} · ${cap} kWp · <span style="color:${bucket==='Alpha'?'var(--bl)':bucket==='Beta'?'var(--cy)':bucket==='Gamma'?'var(--gn)':'var(--pk)'}">${bucket}</span> capacity · 3D: ${designer3d}${designerTsm!==designer3d?' · TSM: '+designerTsm:''}`;
+
+  document.getElementById('dsModalContent').innerHTML = stages.map(s=>{
+    const tat    = tatDaysSimple(s.startVal, s.endVal);
+    const target = targets[s.key];
+    const delta  = (tat!=null && target!=null) ? tat - target : null;
+    const isHL   = highlightStage === s.key;
+    const rowBg  = isHL ? 'background:rgba(245,158,11,.1);border-radius:8px;' : '';
+
+    const badge  = tat==null
+      ? '<span class="tat-badge na">No data</span>'
+      : delta==null
+        ? `<span class="tat-badge ok">${tat}d</span>`
+        : delta === 0
+          ? `<span class="tat-badge ok">${tat}d — On time</span>`
+          : delta > 0
+            ? `<span class="tat-badge over">${tat}d — <b>+${delta}d late</b> vs SLA ${target}d</span>`
+            : `<span class="tat-badge ok">${tat}d — <b>${delta}d early</b> vs SLA ${target}d</span>`;
+
+    return `<div style="padding:12px;margin-bottom:8px;border:1px solid var(--bd);border-radius:10px;${rowBg}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px">${s.label}</span>
+        ${badge}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10px">
+        <div style="background:var(--sf2);padding:8px;border-radius:6px">
+          <div style="color:var(--tm);margin-bottom:3px">▶ ${s.startLabel}</div>
+          ${fmtDate(s.startVal)}
+        </div>
+        <div style="background:var(--sf2);padding:8px;border-radius:6px">
+          <div style="color:var(--tm);margin-bottom:3px">✓ ${s.endLabel}</div>
+          ${fmtDate(s.endVal)}
+        </div>
+      </div>
+      <div style="font-size:9px;color:var(--tm);margin-top:6px">Designer: ${s.designer}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('dsModal').classList.add('on');
+}
+
+function closeDsModal(){
+  document.getElementById('dsModal').classList.remove('on');
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDsModal(); closeProjModal(); } });
 
 function tatDaysSimple(startStr, endStr){
   const sd = parseD(startStr), ed = parseD(endStr);
