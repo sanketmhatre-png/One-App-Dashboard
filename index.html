@@ -73,6 +73,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 .mt td{padding:6px 7px;border-bottom:1px solid var(--bd)}
 .mt tr:last-child td{border-bottom:none}
 .mt tr:hover td{background:var(--sf2)}
+.mt tr[onclick]:hover td{background:rgba(25,188,255,.08);}
 .pipe{display:flex;gap:3px;margin-bottom:12px}
 .ps{flex:1;text-align:center;padding:11px 5px;border-radius:8px}
 .ps .pv{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700}
@@ -174,6 +175,25 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 .tat-badge.na{background:var(--sf2);color:var(--tm);font-weight:500}
 .designer-select{background:var(--sf);border:1px solid var(--bd);color:var(--tx);border-radius:8px;padding:8px 10px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;width:100%}
 .designer-select:focus{outline:none;border-color:var(--brand-cyan)}
+.cal-trigger{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--sf);border:1px solid var(--bd);color:var(--tx);border-radius:8px;padding:8px 10px;font-size:12px;font-family:'Inter',sans-serif;font-weight:600;cursor:pointer;width:100%;transition:border-color .15s}
+.cal-trigger:hover{border-color:var(--brand-cyan)}
+.cal-popup{display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:500;background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px;box-shadow:0 12px 40px rgba(0,0,0,.5);min-width:260px}
+.cal-popup.open{display:block}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px}
+.cal-nav button{background:var(--sf2);border:1px solid var(--bd);color:var(--tx);border-radius:6px;width:26px;height:26px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.cal-nav button:hover{border-color:var(--brand-cyan);color:var(--brand-cyan)}
+.cal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px}
+.cal-month{padding:7px 4px;text-align:center;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:background .15s,color .15s,border-color .15s;color:var(--tm)}
+.cal-month:hover{background:var(--sf2);color:var(--tx)}
+.cal-month.has-data{color:var(--tx)}
+.cal-month.in-range{background:rgba(59,130,246,.18);color:var(--bl);border-color:transparent}
+.cal-month.selected-start,.cal-month.selected-end{background:var(--brand-grad);color:#fff;border-color:transparent}
+.cal-month.selected-start{border-radius:7px 0 0 7px}
+.cal-month.selected-end{border-radius:0 7px 7px 0}
+.cal-month.selected-start.selected-end{border-radius:7px}
+.cal-footer{display:flex;justify-content:space-between}
+.cal-footer button{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:.15s}
+.cal-footer button:hover{background:var(--sf)}
 
 @media(max-width:768px){.g2,.g3,.g21{grid-template-columns:1fr}.pipe{flex-wrap:wrap}.ps{min-width:65px}.kr{grid-template-columns:repeat(2,1fr)}.fnl-lbl{width:80px;font-size:9px}.pa-kpi-grid{grid-template-columns:repeat(2,1fr)}.pa-fbar{font-size:10px;padding:0 8px;gap:5px}.pa-fbar .pa-fname{font-size:9.5px}}
 </style>
@@ -511,26 +531,46 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
     <div class="pa-matrix-hdr">
       <div>
         <div class="pa-matrix-title" id="designerDetailTitle">3D Designer Workload — All Designers</div>
-        <div class="pa-matrix-sub">Project detail + 5-stage TAT vs target — pick a designer to filter the table</div>
+        <div class="pa-matrix-sub">Click a month range · pick a designer · counts show effective projects (completed + partial)</div>
       </div>
-      <div class="tat-target-item" style="min-width:200px">
-        <label>Filter by 3D Designer</label>
-        <select id="designerFilterSelect" class="designer-select" onchange="filterDesignerTable(this.value,'tsm')"></select>
+      <!-- Calendar month-range picker -->
+      <div class="tat-target-item" style="position:relative;min-width:220px">
+        <label>Date Range (Audit Date)</label>
+        <div class="cal-trigger" id="calTrigger" onclick="toggleCalPicker(event)">
+          <span id="calDisplayText">All dates</span>
+          <span style="opacity:.6">📅</span>
+        </div>
+        <div class="cal-popup" id="calPopup">
+          <div class="cal-nav">
+            <button onclick="calShiftYear(-1)">‹</button>
+            <span id="calYearLabel">2026</span>
+            <button onclick="calShiftYear(1)">›</button>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="cal-footer">
+            <button onclick="clearCalFilter()" style="color:var(--rd)">✕ Clear</button>
+            <button onclick="document.getElementById('calPopup').classList.remove('open')" style="color:var(--gn)">✓ Done</button>
+          </div>
+        </div>
       </div>
-      <div class="tat-target-item" style="min-width:200px">
-        <label>Filter by TSM Designer</label>
-        <select id="designerFilterSelectTsm" class="designer-select" onchange="filterDesignerTable('tsm',this.value)"></select>
+      <!-- Single combined designer filter -->
+      <div class="tat-target-item" style="min-width:220px">
+        <label>Filter by Designer (any role)</label>
+        <select id="dsDesignerFilter" class="designer-select" onchange="onDesignerFilterChange()">
+          <option value="__all__">All Designers</option>
+        </select>
       </div>
     </div>
     <div class="kr" id="stageTatKpis" style="margin-bottom:14px"></div>
     <div class="scr" style="max-height:600px">
       <table class="mt">
         <thead><tr>
-          <th>3D Designer<br><span style="font-weight:400;color:var(--tm)">DS1–DS3</span></th>
+          <th>Audit Designer<br><span style="font-weight:400;color:var(--tm)">DS1</span></th>
+          <th>3D Designer<br><span style="font-weight:400;color:var(--tm)">DS2–DS3</span></th>
           <th>TSM Designer<br><span style="font-weight:400;color:var(--tm)">DS4–DS5</span></th>
-          <th>Project</th><th>City</th><th>Capacity (kWp)</th>
+          <th>Project</th><th>City</th><th>kWp</th>
           <th>DS1<br><span style="font-weight:400;color:var(--tm)">DEV→Audit</span></th>
-          <th>DS2<br><span style="font-weight:400;color:var(--tm)">Audit→3D Approved</span></th>
+          <th>DS2<br><span style="font-weight:400;color:var(--tm)">Audit→3D (max)</span></th>
           <th>DS3<br><span style="font-weight:400;color:var(--tm)">3D→QHSE</span></th>
           <th>DS4<br><span style="font-weight:400;color:var(--tm)">QHSE→TSM Upload</span></th>
           <th>DS5<br><span style="font-weight:400;color:var(--tm)">TSM Appr→Trigger</span></th>
@@ -614,6 +654,20 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
   </div>
 </div>
 
+<!-- Aging project detail modal -->
+<div id="agingModal" class="pm-overlay" onclick="if(event.target===this)closeAgingModal()">
+  <div class="pm-box" style="max-width:680px">
+    <div class="pm-head">
+      <div>
+        <div class="pm-title" id="agingModalTitle"></div>
+        <div class="pm-sub" id="agingModalSub"></div>
+      </div>
+      <span class="pm-close" onclick="closeAgingModal()">✕</span>
+    </div>
+    <div class="pm-body"><div id="agingModalContent"></div></div>
+  </div>
+</div>
+
 <!-- City/capacity project drill-down modal -->
 <div id="projModal" class="pm-overlay" onclick="if(event.target===this)closeProjModal()">
   <div class="pm-box">
@@ -631,6 +685,26 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 <script>
 const SHEET_ID = '1mqFfGB8ZzEAitV48Asl_CAEdjpUViKr62s2rObCG30E';
 const SHEETS = ['DEV Request', 'DEV Task', '3D Process', 'HOTO 1', 'HOTO 2', 'Approval'];
+
+// Hardcoded email → full name lookup for DS1 Audit Engineer
+const EMAIL_TO_NAME = {
+  'shreya.m@solarsquare.in':    'Shreya Shivam Mishra',
+  'abhishek.v@solarsquare.in':  'Abhishek Verma',
+  'amit.kakade@solarsquare.in': 'Amit Aviraj Kakade',
+  'harsh.kamdi@solarsquare.in': 'Harsh Kamdi',
+  'wasim.c@solarsquare.in':     'Ahmed Wasim Mohd Hatim Chaudhri',
+  'nihar.g@solarsquare.in':     'Nihar Dilip Ghadge',
+  'shreya.saha@solarsquare.in': 'Shreya Saha',
+  'amaan.s@solarsquare.in':     'Amaan Nadeem Shaikh',
+  'sneha.m@solarsquare.in':     'Sneha Sachin More',
+  'payal.p@solarsquare.in':     'Padhiyar Payal Kantilal',
+  'pooja.s@solarsquare.in':     'Shunkrawar Pooja Shivaji',
+  'soham.b@solarsquare.in':     'Soham Haribhau Badakh',
+  'pranita.r@solarsquare.in':   'Pranita vilas Rokade',
+  'vraj.r@solarsquare.in':      'Rathod Vraj',
+  'pooja.b@solarsquare.in':     'Pooja Vijay Borse',
+  'samreen.k@solarsquare.in':   'Samreen Salim khan',
+};
 let DATA = {};
 
 let currentAgingFilter = 'all';
@@ -1029,10 +1103,10 @@ const DS_COLORS = ['var(--bl)','var(--pr)','var(--gn)','var(--cy)','var(--pk)'];
 // Capacity-based SLA targets per stage (from design process definition)
 // Alpha: 10–30 kW | Beta: 30–100 kW | Gamma: 100–200 kW | Hulk: >200 kW
 const DS_CAP_TARGETS = {
-  'Alpha': { ds1:3,  ds2:3,  ds3:1, ds4:2, ds5:5  },
-  'Beta':  { ds1:3,  ds2:6,  ds3:2, ds4:3, ds5:5  },
-  'Gamma': { ds1:4,  ds2:10, ds3:2, ds4:3, ds5:8  },
-  'Hulk':  { ds1:5,  ds2:18, ds3:2, ds4:5, ds5:12 },
+  'Alpha': { ds1:1,  ds2:5,  ds3:1, ds4:1, ds5:2  },
+  'Beta':  { ds1:1,  ds2:9,  ds3:1, ds4:1, ds5:3  },
+  'Gamma': { ds1:2,  ds2:13, ds3:1, ds4:2, ds5:4  },
+  'Hulk':  { ds1:3,  ds2:21, ds3:1, ds4:4, ds5:7  },
 };
 const STAGE_KEYS   = ['stage1','stage2','stage3','stage4','stage5','stage6','stage7','stage8','stage9','stage10'];
 const STAGE_LABELS = ['HOTO 1','DEV Complete','3D Design','QHSE','TSM Layout','TSM Verified','Finance','Anshuman','Client Appr','HOTO 2'];
@@ -1057,12 +1131,23 @@ function updateStageTarget(idx, val){
   renderDesignerTab();
 }
 
-// ===== 5-STAGE TAT specifically for Designer Analysis (different column mapping) =====
+// ===== 5-STAGE TAT specifically for Designer Analysis =====
+// Returns one row per (project × 3D-designer) combination
+// DS1 designer = DEV Task col S email → looked up from hardcoded EMAIL_TO_NAME map
+// DS2/DS3 designer = 3D Process col D (per-designer, max TAT across revisions)
+// DS4/DS5 designer = 3D Process col AB (last entry)
 function buildDesignerStageTATData(){
   const devTask  = DATA['DEV Task']   || [];
   const d3       = DATA['3D Process'] || [];
   const hoto1    = DATA['HOTO 1']     || [];
   const approval = DATA['Approval']   || [];
+
+  // Resolve auditor email → full name using hardcoded map
+  const nameFromEmail = email => {
+    if(!email) return '';
+    const e = email.toLowerCase().trim();
+    return EMAIL_TO_NAME[e] || email.split('@')[0]; // fallback: part before @
+  };
 
   const devGrouped = {};
   devTask.forEach(r=>{ const pn=g(r,'Project Name');if(pn)(devGrouped[pn]=devGrouped[pn]||[]).push(r); });
@@ -1072,62 +1157,85 @@ function buildDesignerStageTATData(){
   const apprGrouped = {};
   approval.forEach(r=>{ const pn=g(r,'Lead name');if(pn)(apprGrouped[pn]=apprGrouped[pn]||[]).push(r); });
 
-  const allNames = new Set(Object.keys(h1Map));
+  // Union of HOTO 1 + 3D Process so no designer project is missed
+  const allNames = new Set([...Object.keys(h1Map), ...Object.keys(d3Grouped)]);
 
-  return [...allNames].map(pn=>{
+  const result = [];
+
+  [...allNames].forEach(pn => {
     const devRows  = devGrouped[pn]  || [];
     const d3Rows   = d3Grouped[pn]   || [];
     const h1Row    = h1Map[pn];
     const apprRows = apprGrouped[pn] || [];
-
-    // Helper: get the LAST (most recent / final revision) row that has a value in the given column
     const last = (rows, col) => [...rows].reverse().find(r => gCol(r, col));
 
-    // DS1: DEV Task col H 'Assigned Timestamp' → DEV Task col T 'Audit Completed On'
-    const devAssigned = last(devRows, 'H') || devRows[0];
-    const devStart    = devAssigned ? gCol(devAssigned,'H') : '';
-    const auditRow    = last(devRows, 'T');
-    const auditDate   = auditRow ? gCol(auditRow,'T') : '';
+    // DS1: DEV Task col H → col T; auditor name from col S (email)
+    const devAssigned  = last(devRows,'H') || devRows[0];
+    const devStart     = devAssigned ? gCol(devAssigned,'H') : '';
+    const auditRow     = last(devRows,'T');
+    const auditDate    = auditRow ? gCol(auditRow,'T') : '';
+    const auditorEmail = auditRow ? gCol(auditRow,'S') : '';
+    const designerDs1  = nameFromEmail(auditorEmail) || 'Unassigned';
+    const ds1 = tatDaysSimple(devStart, auditDate);
 
-    // DS2: 3D Process col E '3D Design Start Time (DEV Audit Approval / Last Rejection)' → 3D Process col J '3D Approved on'
-    const d3StartRow = last(d3Rows, 'E');
-    const d3StartDate = d3StartRow ? gCol(d3StartRow,'E') : '';
-    const d3ApprRow  = last(d3Rows, 'J');
-    const d3ApprDate = d3ApprRow ? gCol(d3ApprRow,'J') : '';
+    // DS4/DS5: TSM designer from last col AB entry
+    const tsmDesignerRow = last(d3Rows,'AB') || d3Rows[0];
+    const designerTsm    = tsmDesignerRow ? (splitDesigners(gCol(tsmDesignerRow,'AB')).join(', ') || 'Unassigned') : 'Unassigned';
+    const qhseRow        = last(d3Rows,'V');
+    const qhseDate       = qhseRow ? gCol(qhseRow,'V') : '';
+    const tsmUploadRow   = last(d3Rows,'AE');
+    const tsmUploadDate  = tsmUploadRow ? gCol(tsmUploadRow,'AE') : '';
+    const tsmApprRow     = last(d3Rows,'AH');
+    const tsmApprDate    = tsmApprRow ? gCol(tsmApprRow,'AH') : '';
+    const triggerRow     = last(apprRows,'D');
+    const triggerDate    = triggerRow ? gCol(triggerRow,'D') : '';
+    const ds4 = tatDaysSimple(qhseDate, tsmUploadDate);
+    const ds5 = tatDaysSimple(tsmApprDate, triggerDate);
 
-    // DS3: 3D Process col J '3D Approved on' → 3D Process col V 'QHSE Completed Date'
-    const qhseRow  = last(d3Rows, 'V');
-    const qhseDate = qhseRow ? gCol(qhseRow,'V') : '';
-
-    // DS4: 3D Process col V 'QHSE Completed Date' → 3D Process col AE 'TSM Layouts Upload Timestamp'
-    const tsmUploadRow  = last(d3Rows, 'AE');
-    const tsmUploadDate = tsmUploadRow ? gCol(tsmUploadRow,'AE') : '';
-
-    // DS5: 3D Process col AH 'TSM Approved On' → Approval sheet col D 'Design Confirmed On'
-    const tsmApprRow  = last(d3Rows, 'AH');
-    const tsmApprDate = tsmApprRow ? gCol(tsmApprRow,'AH') : '';
-    const triggerRow  = last(apprRows, 'D');
-    const triggerDate = triggerRow ? gCol(triggerRow,'D') : '';
-
-    const ds1 = (devStart    && auditDate)     ? tatDaysSimple(devStart,    auditDate)     : null;
-    const ds2 = (d3StartDate && d3ApprDate)    ? tatDaysSimple(d3StartDate, d3ApprDate)    : null;
-    const ds3 = (d3ApprDate  && qhseDate)      ? tatDaysSimple(d3ApprDate,  qhseDate)      : null;
-    const ds4 = (qhseDate    && tsmUploadDate) ? tatDaysSimple(qhseDate,    tsmUploadDate) : null;
-    const ds5 = (tsmApprDate && triggerDate)   ? tatDaysSimple(tsmApprDate, triggerDate)   : null;
-
-    // 3D Designer from col D, TSM Layout Creator from col AB
-    const designerRow   = d3Rows.find(r=>gCol(r,'D'))  || d3Rows[0];
-    const tsmDesignerRow = d3Rows.find(r=>gCol(r,'AB')) || d3Rows[0];
-    const designerNames3d  = designerRow    ? getDesignerNames(designerRow)                    : [];
-    const designerNamesTsm = tsmDesignerRow ? splitDesigners(gCol(tsmDesignerRow,'AB'))        : [];
-    const designer3d  = designerNames3d.length  ? designerNames3d.join(', ')  : 'Unassigned';
-    const designerTsm = designerNamesTsm.length ? designerNamesTsm.join(', ') : designer3d;
+    // DS2/DS3: group d3Rows by 3D designer (col D), one output row per unique designer
+    const byDesigner = {};
+    d3Rows.forEach(r => {
+      const names = getDesignerNames(r);
+      const list  = names.length ? names : ['Unassigned'];
+      list.forEach(dn => { (byDesigner[dn] = byDesigner[dn] || []).push(r); });
+    });
+    if(!Object.keys(byDesigner).length) byDesigner['Unassigned'] = [];
 
     const city = h1Row ? g(h1Row,'City') : '';
+    const cap  = h1Row ? num(g(h1Row,'Project Size (Capacity)')) : 0;
 
-    return { name:pn, designer: designer3d, designer3d, designerTsm, city, ds1, ds2, ds3, ds4, ds5 };
-  }).filter(r=>r.ds1!=null||r.ds2!=null||r.ds3!=null||r.ds4!=null||r.ds5!=null);
+    Object.entries(byDesigner).forEach(([designer3d, rows]) => {
+      // DS2: compute TAT for each revision by this designer, take MAX
+      const ds2Vals = rows.map(r => {
+        const s = gCol(r,'E'), e = gCol(r,'J');
+        return tatDaysSimple(s, e);
+      }).filter(v => v != null);
+      const ds2 = ds2Vals.length ? Math.max(...ds2Vals) : null;
+
+      // DS3: this designer's last J → overall QHSE date
+      const lastApprRow = [...rows].reverse().find(r => gCol(r,'J'));
+      const d3ApprDate  = lastApprRow ? gCol(lastApprRow,'J') : '';
+      const ds3 = tatDaysSimple(d3ApprDate, qhseDate);
+
+      const dates = {
+        devStart, auditDate,
+        d3Start:  rows.length ? gCol(rows[rows.length-1],'E') : '',
+        d3ApprDate, qhseDate, tsmUploadDate, tsmApprDate, triggerDate
+      };
+
+      if(ds1!=null||ds2!=null||ds3!=null||ds4!=null||ds5!=null){
+        result.push({
+          name: pn, designer: designer3d, designer3d,
+          designerDs1, designerTsm,
+          city, cap, ds1, ds2, ds3, ds4, ds5, dates
+        });
+      }
+    });
+  });
+
+  return result;
 }
+
 
 function buildStageTATData(){
   const devTask  = DATA['DEV Task']   || [];
@@ -1827,30 +1935,22 @@ function renderDesignerTab(){
   });
 
   // Flat designer-project rows (one row per designer per project) with stage TAT attached for display
-  const flat = [];
-  Object.keys(grouped).forEach(pn => {
-    const rows = grouped[pn];
-    const h1row = h1Map[pn];
-    const city = h1row ? g(h1row,'City') : '';
-    const cap = h1row ? num(g(h1row,'Project Size (Capacity)')) : 0;
-    const status = h1row ? g(h1row,'HOTO 1 Status') : '';
-    const sd = stageMap[pn] || {};
-    const stageVals = {};
-    DS_KEYS.forEach(sk => { stageVals[sk] = sd[sk] ?? null; });
-
-    // Get 3D designers (col D) and TSM designer (col AB) per project
-    const d3Row = rows.find(r => gCol(r,'D')) || rows[0];
-    const names3d = d3Row ? getDesignerNames(d3Row) : [];
-    const final3d = names3d.length ? names3d : ['Unassigned'];
-    const tsmRow = rows.find(r=>gCol(r,'AB')) || rows[0];
-    const nameTsm = tsmRow ? (splitDesigners(gCol(tsmRow,'AB')).join(', ') || final3d.join(', ')) : final3d.join(', ');
-
-    final3d.forEach(designer => {
-      flat.push({ designer, designer3d: designer, designerTsm: nameTsm, name: pn, city, cap, status, ...stageVals });
-    });
+  // stageData already returns one row per (project × 3D-designer)
+  // Just attach cap from h1Map for any row that's missing it
+  // stageData already returns one row per (project × 3D-designer) — use directly
+  const flat = stageData.map(r => {
+    const h1r = h1Map[r.name];
+    return {
+      ...r,
+      cap:    r.cap    || (h1r ? num(g(h1r,'Project Size (Capacity)')) : 0),
+      city:   r.city   || (h1r ? g(h1r,'City') : ''),
+      status: h1r ? g(h1r,'HOTO 1 Status') : '',
+      designer: r.designer3d
+    };
   });
 
   window._designerFlat = flat;
+  populateDesignerFilter();
 
   // ---- TOP CHART: Designer vs Completed Projects ----
   const completedCounts = {}, totalCounts = {};
@@ -1886,43 +1986,21 @@ function renderDesignerTab(){
     return kpiHTML(stageColors[i], stageLabels[i]+' On-Target', vals.length?pct(within,vals.length)+'%':'—', `Avg ${avg!=null?avg.toFixed(1):'—'}d · SLA varies by capacity`);
   }).join('');
 
-  // ---- Filter dropdowns (3D designer and TSM designer) ----
-  const counts3d = {}, countsTsm = {};
-  flat.forEach(r => {
-    counts3d[r.designer3d] = (counts3d[r.designer3d]||0) + 1;
-    countsTsm[r.designerTsm] = (countsTsm[r.designerTsm]||0) + 1;
-  });
-  const designers3d = Object.keys(counts3d).sort((a,b)=>counts3d[b]-counts3d[a]);
-  const designersTsm = Object.keys(countsTsm).sort((a,b)=>countsTsm[b]-countsTsm[a]);
-
-  const sel = document.getElementById('designerFilterSelect');
-  const selTsm = document.getElementById('designerFilterSelectTsm');
-  const prevVal3d = sel.value || '__all__';
-  const prevValTsm = selTsm ? selTsm.value || '__all__' : '__all__';
-  sel.innerHTML = `<option value="__all__">All 3D Designers</option>` +
-    designers3d.map(d=>`<option value="${d.replace(/"/g,'&quot;')}">${d} (${counts3d[d]})</option>`).join('');
-  sel.value = [...sel.options].some(o=>o.value===prevVal3d) ? prevVal3d : '__all__';
-  if(selTsm){
-    selTsm.innerHTML = `<option value="__all__">All TSM Designers</option>` +
-      designersTsm.map(d=>`<option value="${d.replace(/"/g,'&quot;')}">${d} (${countsTsm[d]})</option>`).join('');
-    selTsm.value = [...selTsm.options].some(o=>o.value===prevValTsm) ? prevValTsm : '__all__';
-  }
-
-  filterDesignerTable(sel.value, selTsm?selTsm.value:'__all__');
+  filterDesignerTable(document.getElementById('dsDesignerFilter')?.value || '__all__');
 }
 
 function crossFilterDesignerChart(designer){
   // Toggle off if clicking the same bar again
   if(currentDesignerChartFilter === designer){
     currentDesignerChartFilter = null;
-    const sel = document.getElementById('designerFilterSelect');
-    sel.value = '__all__';
-    filterDesignerTable('__all__', '__all__');
+    const sel = document.getElementById('dsDesignerFilter');
+    if(sel) sel.value = '__all__';
+    filterDesignerTable('__all__');
   } else {
     currentDesignerChartFilter = designer;
-    const sel = document.getElementById('designerFilterSelect');
-    sel.value = [...sel.options].some(o=>o.value===designer) ? designer : '__all__';
-    filterDesignerTable(sel.value, '__all__');
+    const sel = document.getElementById('dsDesignerFilter');
+    if(sel) sel.value = [...sel.options].some(o=>o.value===designer) ? designer : '__all__';
+    filterDesignerTable(sel ? sel.value : '__all__');
   }
   // Re-highlight the active bar without rebuilding the whole tab
   document.querySelectorAll('#designerCompletedBars .hb').forEach(el=>{
@@ -1932,15 +2010,148 @@ function crossFilterDesignerChart(designer){
   });
 }
 
-function filterDesignerTable(designer, designerTsmFilter){
-  // Accept both filter values; resolve from dropdowns if not passed
-  const sel = document.getElementById('designerFilterSelect');
-  const selTsm = document.getElementById('designerFilterSelectTsm');
-  const filter3d  = (designer !== 'tsm' && designer !== undefined) ? designer : (sel ? sel.value : '__all__');
-  const filterTsm = (designerTsmFilter !== 'tsm' && designerTsmFilter !== undefined) ? designerTsmFilter : (selTsm ? selTsm.value : '__all__');
+// ===== DESIGNER CALENDAR DATE FILTER =====
+window._dsDateFilter = { start: null, end: null }; // {year,month} objects
+window._calYear = new Date().getFullYear();
+window._calSelecting = 'start'; // 'start' | 'end'
+window._calMonthsWithData = new Set(); // "YYYY-M" strings
+
+const MON_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function populateDesignerFilter(){
+  const flat = window._designerFlat || [];
+  // Collect all unique names across all 3 designer roles
+  const allNames = new Set();
+  flat.forEach(r => {
+    if(r.designerDs1) allNames.add(r.designerDs1);
+    if(r.designer3d)  allNames.add(r.designer3d);
+    if(r.designerTsm) allNames.add(r.designerTsm);
+  });
+  // Count projects per designer (any role)
+  const counts = {};
+  allNames.forEach(n => {
+    counts[n] = flat.filter(r => r.designerDs1===n || r.designer3d===n || r.designerTsm===n).length;
+  });
+  const sorted = [...allNames].sort((a,b) => counts[b]-counts[a]);
+
+  const sel = document.getElementById('dsDesignerFilter');
+  const cur = sel ? sel.value : '__all__';
+  if(sel){
+    sel.innerHTML = `<option value="__all__">All Designers</option>` +
+      sorted.map(n => `<option value="${n.replace(/"/g,'&quot;')}">${n} (${counts[n]})</option>`).join('');
+    sel.value = [...sel.options].some(o=>o.value===cur) ? cur : '__all__';
+  }
+
+  // Track which year-months have audit data
+  window._calMonthsWithData = new Set();
+  flat.forEach(r => {
+    const d = parseD(r.dates && r.dates.auditDate);
+    if(d) window._calMonthsWithData.add(`${d.getFullYear()}-${d.getMonth()+1}`);
+  });
+  renderCalGrid();
+}
+
+function renderCalGrid(){
+  const year = window._calYear;
+  const df   = window._dsDateFilter;
+  document.getElementById('calYearLabel').textContent = year;
+  const grid = document.getElementById('calGrid');
+  if(!grid) return;
+
+  grid.innerHTML = MON_NAMES.map((name, i) => {
+    const m = i + 1;
+    const key = `${year}-${m}`;
+    const hasData = window._calMonthsWithData.has(key);
+
+    // Determine range highlight
+    const startY = df.start ? df.start.year : null, startM = df.start ? df.start.month : null;
+    const endY   = df.end   ? df.end.year   : null, endM   = df.end   ? df.end.month   : null;
+
+    const isStart = startY===year && startM===m;
+    const isEnd   = endY===year   && endM===m;
+    let inRange = false;
+    if(df.start && df.end){
+      const cur  = year*12+m, s = startY*12+startM, e = endY*12+endM;
+      inRange = cur > Math.min(s,e) && cur < Math.max(s,e);
+    }
+
+    let cls = 'cal-month';
+    if(hasData) cls += ' has-data';
+    if(isStart) cls += ' selected-start';
+    if(isEnd)   cls += ' selected-end';
+    if(inRange) cls += ' in-range';
+    return `<div class="${cls}" onclick="calSelectMonth(${year},${m})">${name}</div>`;
+  }).join('');
+}
+
+function calSelectMonth(year, month){
+  const df = window._dsDateFilter;
+  if(!df.start || window._calSelecting === 'start'){
+    // First click — set start
+    window._dsDateFilter = { start:{year,month}, end:null };
+    window._calSelecting = 'end';
+  } else {
+    // Second click — set end (ensure start <= end)
+    let s = df.start, e = {year,month};
+    if(s.year*12+s.month > e.year*12+e.month){ const tmp=s;s=e;e=tmp; }
+    window._dsDateFilter = { start:s, end:e };
+    window._calSelecting = 'start';
+    // Auto-close after range selected
+    setTimeout(()=>document.getElementById('calPopup').classList.remove('open'), 250);
+  }
+  renderCalGrid();
+  updateCalDisplay();
+  onDesignerFilterChange();
+}
+
+function calShiftYear(delta){
+  window._calYear += delta;
+  renderCalGrid();
+}
+
+function clearCalFilter(){
+  window._dsDateFilter = { start:null, end:null };
+  window._calSelecting = 'start';
+  renderCalGrid();
+  updateCalDisplay();
+  onDesignerFilterChange();
+}
+
+function updateCalDisplay(){
+  const df = window._dsDateFilter;
+  const el = document.getElementById('calDisplayText');
+  if(!el) return;
+  if(!df.start) { el.textContent = 'All dates'; return; }
+  const s = `${MON_NAMES[df.start.month-1]} ${df.start.year}`;
+  if(!df.end || (df.end.year===df.start.year && df.end.month===df.start.month)){
+    el.textContent = s; return;
+  }
+  el.textContent = `${s} — ${MON_NAMES[df.end.month-1]} ${df.end.year}`;
+}
+
+function toggleCalPicker(e){
+  e.stopPropagation();
+  const p = document.getElementById('calPopup');
+  p.classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  const cal = document.getElementById('calPopup');
+  const trigger = document.getElementById('calTrigger');
+  if(cal && !cal.contains(e.target) && trigger && !trigger.contains(e.target)){
+    cal.classList.remove('open');
+  }
+});
+
+function onDesignerFilterChange(){
+  filterDesignerTable(document.getElementById('dsDesignerFilter')?.value || '__all__');
+}
+
+
+function filterDesignerTable(designer){
+  const filter = (designer !== undefined) ? designer : (document.getElementById('dsDesignerFilter')?.value || '__all__');
 
   // Keep chart highlight in sync
-  currentDesignerChartFilter = filter3d === '__all__' ? null : filter3d;
+  currentDesignerChartFilter = filter === '__all__' ? null : filter;
   document.querySelectorAll('#designerCompletedBars .hb').forEach(el=>{
     const label = el.querySelector('.hl span:first-child');
     const isActive = label && label.textContent === currentDesignerChartFilter;
@@ -1949,25 +2160,51 @@ function filterDesignerTable(designer, designerTsmFilter){
 
   const flat = window._designerFlat || [];
   let filtered = flat;
-  if(filter3d !== '__all__')  filtered = filtered.filter(r => r.designer3d === filter3d);
-  if(filterTsm !== '__all__') filtered = filtered.filter(r => r.designerTsm === filterTsm);
 
-  const totalCap = filtered.reduce((s,r)=>s+r.cap,0);
-  const activeLabel = [
-    filter3d!=='__all__'?`3D: ${filter3d}`:'',
-    filterTsm!=='__all__'?`TSM: ${filterTsm}`:'',
-  ].filter(Boolean).join(' · ');
+  // Single designer filter — match any role
+  if(filter !== '__all__'){
+    filtered = filtered.filter(r =>
+      r.designerDs1 === filter || r.designer3d === filter || r.designerTsm === filter
+    );
+  }
 
-  document.getElementById('designerDetailTitle').innerHTML = activeLabel
-    ? `${activeLabel} <span style="color:var(--tm);font-weight:500;font-size:12px"> · ${filtered.length} rows · ${totalCap.toFixed(1)} kWp</span>`
-    : `3D Designer Workload — All <span style="color:var(--tm);font-weight:500;font-size:12px"> · ${filtered.length} rows · ${totalCap.toFixed(1)} kWp total</span>`;
+  // Date filter — match on audit completion date
+  const df = window._dsDateFilter || {};
+  if(df.start){
+    filtered = filtered.filter(r => {
+      const dateStr = r.dates && r.dates.auditDate;
+      if(!dateStr) return false;
+      const d = parseD(dateStr);
+      if(!d) return false;
+      const cur = d.getFullYear()*12 + d.getMonth()+1;
+      const s   = df.start.year*12 + df.start.month;
+      const e   = df.end ? df.end.year*12 + df.end.month : s;
+      return cur >= Math.min(s,e) && cur <= Math.max(s,e);
+    });
+  }
 
-  const statusPill = (s) => {
-    if(!s) return '<span class="pill" style="background:var(--sf2);color:var(--tm)">—</span>';
-    const low = s.toLowerCase();
-    if(low==='completed'||low==='complete') return '<span class="pill g">'+s+'</span>';
-    return '<span class="pill y">'+s+'</span>';
-  };
+  // Fractional project count: each project contributes (stages_with_data / total_stages)
+  const effectiveCount = filtered.reduce((sum, r) => {
+    const done = DS_KEYS.filter(k => r[k] != null).length;
+    return sum + done / DS_KEYS.length;
+  }, 0);
+  const totalCap = filtered.reduce((s,r)=>s+r.cap, 0);
+
+  // Build date label
+  const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  let dateLabel = '';
+  if(df.start){
+    const s = `${months[df.start.month]} ${df.start.year}`;
+    dateLabel = (!df.end||(df.end.year===df.start.year&&df.end.month===df.start.month))
+      ? `📅 ${s}` : `📅 ${s}–${months[df.end.month]} ${df.end.year}`;
+  }
+
+  const activeParts = [dateLabel, filter!=='__all__'?`👤 ${filter}`:''].filter(Boolean).join(' · ');
+  const effectiveStr = Number.isInteger(effectiveCount) ? effectiveCount : effectiveCount.toFixed(1);
+
+  document.getElementById('designerDetailTitle').innerHTML = activeParts
+    ? `${activeParts} <span style="color:var(--tm);font-weight:500;font-size:12px"> · ${effectiveStr} effective projects · ${totalCap.toFixed(1)} kWp</span>`
+    : `3D Designer Workload — All <span style="color:var(--tm);font-weight:500;font-size:12px"> · ${effectiveStr} effective projects · ${totalCap.toFixed(1)} kWp total</span>`;
 
   const sameDesigner = r => r.designer3d === r.designerTsm;
 
@@ -1976,9 +2213,10 @@ function filterDesignerTable(designer, designerTsmFilter){
       const targets = DS_CAP_TARGETS[capBucket(r.cap)] || {};
       const safe = r.name.replace(/'/g,"\\'");
       return `<tr>
+      <td style="font-weight:500">${r.designerDs1||'—'}</td>
       <td style="font-weight:500">${r.designer3d}</td>
-      <td style="font-weight:500;${sameDesigner(r)?'color:var(--tm)':''}">${sameDesigner(r)?'<span style="color:var(--tm)">same</span>':r.designerTsm}</td>
-      <td style="font-weight:500;cursor:pointer;color:var(--brand-cyan);text-decoration:underline" onclick="openDsModal('${safe}')">${r.name}</td>
+      <td style="${sameDesigner(r)?'color:var(--tm)':''}">${sameDesigner(r)?'<span style="color:var(--tm)">same</span>':r.designerTsm}</td>
+      <td style="cursor:pointer;color:var(--brand-cyan);font-weight:500" onclick="openDsModal('${safe}')">${r.name}</td>
       <td>${r.city||'—'}</td>
       <td>${r.cap||'—'}</td>
       <td style="cursor:pointer" onclick="openDsModal('${safe}','ds1')">${tatCapBadge(r.ds1, targets.ds1)}</td>
@@ -1989,7 +2227,7 @@ function filterDesignerTable(designer, designerTsmFilter){
     </tr>`;
     }).join('') +
     `<tr style="border-top:2px solid var(--bl);background:rgba(59,130,246,.06)">
-      <td colspan="4" style="font-weight:700;color:var(--bl)">Total</td>
+      <td colspan="5" style="font-weight:700;color:var(--bl)">Total</td>
       <td style="font-weight:700;color:var(--bl)">${totalCap.toFixed(1)} kWp</td>
       <td colspan="5"></td>
     </tr>`;
@@ -2107,7 +2345,7 @@ function openDsModal(projectName, highlightStage){
 function closeDsModal(){
   document.getElementById('dsModal').classList.remove('on');
 }
-document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDsModal(); closeProjModal(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeDsModal(); closeProjModal(); closeAgingModal(); } });
 
 function tatDaysSimple(startStr, endStr){
   const sd = parseD(startStr), ed = parseD(endStr);
@@ -2596,7 +2834,7 @@ function buildAndRenderAgingTable(){
   else{if(currentAgingFilter==='active')data=data.filter(p=>!p.completed);else if(currentAgingFilter==='over30')data=data.filter(p=>p.days>30&&!p.completed);else if(currentAgingFilter==='completed')data=data.filter(p=>p.completed)}
   data.sort((a,b)=>{let va=a[currentSortKey],vb=b[currentSortKey];if(va==null)return currentSortAsc?1:-1;if(vb==null)return currentSortAsc?-1:1;if(typeof va==='string')return currentSortAsc?va.localeCompare(vb):vb.localeCompare(va);return currentSortAsc?va-vb:vb-va});
   ['name','city','stage','stageDate','days','cap'].forEach(col=>{const ind=document.getElementById('sort_'+col);if(ind){if(currentSortKey===col){ind.textContent=currentSortAsc?' ▲':' ▼';ind.style.color='var(--ac)'}else ind.textContent=''}});
-  tb.innerHTML=data.map(p=>{const c=stageColorMap[p.stage]||'var(--tx)';return `<tr><td style="font-weight:500">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${c}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td><td>${p.cap||'—'}</td></tr>`}).join('');
+  tb.innerHTML=data.map(p=>{const c=stageColorMap[p.stage]||'var(--tx)';const safe=p.name.replace(/'/g,"\\'");return `<tr style="cursor:pointer" onclick="openAgingModal('${safe}')"><td style="font-weight:500;color:var(--brand-cyan)">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${c}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td><td>${p.cap||'—'}</td></tr>`}).join('');
 }
 
 function agingBadge(days,completed){
@@ -2604,6 +2842,113 @@ function agingBadge(days,completed){
   if(days<=7)return `<span class="pill g">${days}d</span>`;if(days<=15)return `<span class="pill cy">${days}d</span>`;
   if(days<=30)return `<span class="pill y">${days}d</span>`;if(days<=60)return `<span class="pill" style="background:var(--pkd);color:var(--pk)">${days}d</span>`;
   return `<span class="pill r">${days}d</span>`;
+}
+
+// ===== AGING PROJECT DETAIL MODAL =====
+function openAgingModal(projectName){
+  const hoto1   = DATA['HOTO 1']     || [];
+  const devTask  = DATA['DEV Task']   || [];
+  const d3       = DATA['3D Process'] || [];
+  const approval = DATA['Approval']   || [];
+  const hoto2    = DATA['HOTO 2']     || [];
+
+  const h1Rows   = hoto1.filter(r=>g(r,'Project name')===projectName);
+  const devRows  = devTask.filter(r=>g(r,'Project Name')===projectName);
+  const d3Groups = groupD3ByProject(d3);
+  const d3Rows   = d3Groups[projectName] || [];
+  const apprRows = approval.filter(r=>g(r,'Lead name')===projectName);
+  const h2Rows   = hoto2.filter(r=>g(r,'Project name')===projectName);
+  const h1Row    = h1Rows[0];
+
+  const last = (rows, col) => [...rows].reverse().find(r=>gCol(r,col));
+  const lastG = (rows, field) => {
+    const r = [...rows].reverse().find(r=>g(r,field));
+    return r ? g(r,field) : '';
+  };
+
+  const cap    = h1Row ? num(g(h1Row,'Project Size (Capacity)')) : 0;
+  const city   = h1Row ? g(h1Row,'City') : '—';
+  const bucket = capBucket(cap) || '—';
+
+  const fmtDate = v => v ? `<b style="color:var(--tx)">${v}</b>` : '<span style="color:var(--tm)">—</span>';
+  const tatBadgeLocal = (start, end) => {
+    const d = tatDaysSimple(start, end);
+    if(d==null) return '<span class="tat-badge na">—</span>';
+    if(d<=7)  return `<span class="tat-badge ok">${d}d</span>`;
+    if(d<=15) return `<span class="tat-badge ok" style="background:var(--cyd);color:var(--cy)">${d}d</span>`;
+    if(d<=30) return `<span class="tat-badge" style="background:var(--ag);color:var(--ac)">${d}d</span>`;
+    return `<span class="tat-badge over">${d}d</span>`;
+  };
+
+  // Collect all pipeline dates
+  const h1StartDate   = lastG(h1Rows, 'Approval Email Sent On');
+  const h1DoneDate    = lastG(h1Rows, 'HOTO 1 completed on');
+  const devAssigned   = last(devRows,'H') ? gCol(last(devRows,'H'),'H') : '';
+  const auditDone     = last(devRows,'T') ? gCol(last(devRows,'T'),'T') : '';
+  const d3StartDate   = last(d3Rows,'E')  ? gCol(last(d3Rows,'E'),'E')  : '';
+  const d3ApprDate    = last(d3Rows,'J')  ? gCol(last(d3Rows,'J'),'J')  : '';
+  const qhseDate      = last(d3Rows,'V')  ? gCol(last(d3Rows,'V'),'V')  : '';
+  const tsmLayoutDate = last(d3Rows,'AM') ? gCol(last(d3Rows,'AM'),'AM'): '';
+  const tsmVerDate    = last(d3Rows,'AO') ? gCol(last(d3Rows,'AO'),'AO'): '';
+  const adminApprDate = last(d3Rows,'BI') ? gCol(last(d3Rows,'BI'),'BI'): '';
+  const finDate       = last(apprRows,'H') ? gCol(last(apprRows,'H'),'H') : '';
+  const anshDate      = last(apprRows,'K') ? gCol(last(apprRows,'K'),'K') : '';
+  const clientApprDate= last(d3Rows,'BC') ? gCol(last(d3Rows,'BC'),'BC'): '';
+  const h2DoneDate    = last(h2Rows,'P')  ? gCol(last(h2Rows,'P'),'P')  : '';
+
+  const stages = [
+    { label:'HOTO 1',              start:h1StartDate,   startLbl:'Approval Email Sent', end:h1DoneDate,    endLbl:'HOTO 1 Completed',        color:'var(--ac)' },
+    { label:'DEV Complete',        start:h1DoneDate,    startLbl:'HOTO 1 Completed',    end:devAssigned,   endLbl:'DEV Assigned Timestamp',   color:'var(--bl)' },
+    { label:'DEV Approved',        start:devAssigned,   startLbl:'DEV Assigned',        end:auditDone,     endLbl:'Audit Completed On',       color:'var(--pr)' },
+    { label:'3D Design',           start:d3StartDate,   startLbl:'3D Design Start',     end:d3ApprDate,    endLbl:'3D Approved On',           color:'var(--gn)' },
+    { label:'QHSE',                start:d3ApprDate,    startLbl:'3D Approved On',      end:qhseDate,      endLbl:'QHSE Completed Date',      color:'var(--cy)' },
+    { label:'TSM Layout',          start:qhseDate,      startLbl:'QHSE Completed',      end:tsmLayoutDate, endLbl:'TSM Approved On (Layout)', color:'var(--pk)' },
+    { label:'TSM Verified',        start:tsmLayoutDate, startLbl:'TSM Layout Approved', end:tsmVerDate,    endLbl:'TSM Completed Date',       color:'var(--ac)' },
+    { label:'Finance Approved',    start:adminApprDate, startLbl:'Admin Approval',      end:finDate,       endLbl:'Finance Approved On',      color:'var(--gn)' },
+    { label:'Anshuman Approved',   start:finDate,       startLbl:'Finance Approved',    end:anshDate,      endLbl:'Anshuman Approved On',     color:'var(--cy)' },
+    { label:'Client Approved',     start:anshDate,      startLbl:'Anshuman Approved',   end:clientApprDate,endLbl:'Client Approval Timestamp', color:'var(--pr)' },
+    { label:'HOTO 2 Completed',    start:clientApprDate,startLbl:'Client Approved',     end:h2DoneDate,    endLbl:'HOTO 2 Completed On',      color:'var(--gn)' },
+  ];
+
+  // Current stage from aging data
+  const agingRow = (window._agingData||[]).find(r=>r.name===projectName);
+  const currentStage = agingRow ? agingRow.stage : '—';
+  const daysInStage  = agingRow ? agingRow.days  : null;
+
+  document.getElementById('agingModalTitle').textContent = projectName;
+  document.getElementById('agingModalSub').innerHTML =
+    `${city} · ${cap||'—'} kWp · <span style="color:var(--ac)">${bucket}</span> · Current: <b style="color:${stageColorMap[currentStage]||'var(--tx)'}">${currentStage}</b>${daysInStage!=null?' · '+daysInStage+'d in stage':''}`;
+
+  document.getElementById('agingModalContent').innerHTML = stages.map(s=>{
+    const done = s.start && s.end;
+    const pending = s.start && !s.end;
+    const bg = done ? '' : pending ? 'border-color:var(--ac);' : 'opacity:.5;';
+    return `<div style="padding:12px;margin-bottom:8px;border:1px solid var(--bd);border-radius:10px;${bg}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;color:${s.color}">${s.label}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${tatBadgeLocal(s.start, s.end)}
+          ${done?'<span class="pill g" style="font-size:9px">Done</span>':pending?'<span class="pill y" style="font-size:9px">In Progress</span>':'<span class="pill" style="background:var(--sf2);color:var(--tm);font-size:9px">Pending</span>'}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:10px">
+        <div style="background:var(--sf2);padding:8px;border-radius:6px">
+          <div style="color:var(--tm);margin-bottom:3px">▶ ${s.startLbl}</div>
+          ${fmtDate(s.start)}
+        </div>
+        <div style="background:var(--sf2);padding:8px;border-radius:6px">
+          <div style="color:var(--tm);margin-bottom:3px">✓ ${s.endLbl}</div>
+          ${fmtDate(s.end)}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('agingModal').classList.add('on');
+}
+
+function closeAgingModal(){
+  document.getElementById('agingModal').classList.remove('on');
 }
 
 fetchAll();
