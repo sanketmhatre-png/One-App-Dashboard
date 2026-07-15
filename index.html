@@ -11,9 +11,10 @@
 :root{--bg:#0c0f14;--sf:#151921;--sf2:#1c2230;--bd:#252d3d;--tx:#e4e8f1;--tm:#8892a6;--ac:#f59e0b;--ag:rgba(245,158,11,.15);--gn:#22c55e;--gd:rgba(34,197,94,.15);--rd:#ef4444;--rdd:rgba(239,68,68,.15);--bl:#3b82f6;--bld:rgba(59,130,246,.15);--pr:#a855f7;--prd:rgba(168,85,247,.15);--cy:#06b6d4;--cyd:rgba(6,182,212,.15);--pk:#ec4899;--pkd:rgba(236,72,153,.12);--r:12px;
 --brand-indigo:#141ca5;--brand-cyan:#19bcff;--brand-grad:linear-gradient(120deg,#141ca5 0%,#3b4fd6 45%,#19bcff 100%)}
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;background-image:radial-gradient(circle at 12% -8%,rgba(20,28,165,.18),transparent 40%),radial-gradient(circle at 88% 0%,rgba(25,188,255,.10),transparent 45%);background-attachment:fixed}
-.d{max-width:1360px;margin:0 auto;padding:18px 18px 50px}
-.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:14px 18px;border-radius:16px;border:1px solid var(--bd);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0));position:relative;overflow:hidden;flex-wrap:wrap;gap:10px}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;background-image:radial-gradient(circle at 12% -8%,rgba(20,28,165,.18),transparent 40%),radial-gradient(circle at 88% 0%,rgba(25,188,255,.10),transparent 45%);background-attachment:fixed;display:flex;flex-direction:column}
+.d{flex:1;display:flex;flex-direction:column;width:100%;padding:12px 16px 0;overflow:hidden}
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:10px 16px;border-radius:16px;border:1px solid var(--bd);background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,0));position:relative;overflow:hidden;flex-wrap:wrap;gap:10px;flex-shrink:0}
 .hdr::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--brand-grad)}
 .hdr-l{display:flex;align-items:center;gap:12px}
 .logo-chip{width:42px;height:42px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 10px rgba(20,28,165,.35);overflow:hidden}
@@ -29,7 +30,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .rbtn{background:var(--sf2);border:1px solid var(--bd);color:var(--tm);font-size:10px;padding:6px 13px;border-radius:8px;cursor:pointer;font-family:Inter;font-weight:600;transition:.2s}
 .rbtn:hover{border-color:var(--brand-cyan);color:var(--brand-cyan);box-shadow:0 0 0 1px rgba(25,188,255,.25)}
-.tabs{display:flex;gap:4px;margin-bottom:18px;overflow-x:auto;padding:5px;-webkit-overflow-scrolling:touch;background:var(--sf);border:1px solid var(--bd);border-radius:12px}
+.tabs{display:flex;gap:4px;margin-bottom:10px;overflow-x:auto;padding:5px;-webkit-overflow-scrolling:touch;background:var(--sf);border:1px solid var(--bd);border-radius:12px;flex-shrink:0}
 .tabs::-webkit-scrollbar{height:4px}
 .tabs::-webkit-scrollbar-thumb{background:var(--bd);border-radius:4px}
 .tab{padding:8px 16px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;background:transparent;color:var(--tm);white-space:nowrap;transition:.2s}
@@ -230,6 +231,8 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
   <div class="tab" onclick="T(6)">All Projects</div>
   <div class="tab" onclick="openDesignerTab()">Designer Analysis</div>
 </div>
+
+<div id="scrollArea" style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:20px">
 
 <div id="loadingState" class="loading-overlay">
   <div class="spinner"></div>
@@ -637,6 +640,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
 </div>
 
 </div></div>
+</div><!-- /scrollArea -->
 
 <!-- Designer Analysis password modal -->
 <div id="pwModal" class="pm-overlay" onclick="if(event.target===this)closePwModal()">
@@ -747,7 +751,7 @@ const stageColorMap = {
   '✓ HOTO 2 Completed':'var(--gn)'
 };
 
-function T(n){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));document.getElementById('t'+n).classList.add('on');document.querySelector(`.tab[onclick="T(${n})"]`).classList.add('on')}
+function T(n){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));const pn=document.getElementById('t'+n);if(pn)pn.classList.add('on');const tb=document.querySelector(`.tab[onclick="T(${n})"]`);if(tb)tb.classList.add('on')}
 
 function fetchSheet(name){
   const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
