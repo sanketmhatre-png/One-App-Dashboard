@@ -385,7 +385,15 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
   </div>
   <div class="cd">
     <div class="ct"><div class="dot" style="background:var(--ac)"></div>Project Stage & Aging — All Projects</div>
-    <div class="filter-row" id="stageFilterRow"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:200px;max-width:360px">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tm);font-size:13px;pointer-events:none">🔍</span>
+        <input id="agingSearchInput" type="text" placeholder="Search project name…" oninput="buildAndRenderAgingTable()"
+          style="width:100%;padding:7px 10px 7px 30px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-size:12px;outline:none;font-family:inherit"
+          onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--bd)'">
+      </div>
+      <div class="filter-row" id="stageFilterRow" style="margin-bottom:0"></div>
+    </div>
     <div class="scr" style="max-height:600px">
       <table class="mt" id="agingMasterTable">
         <thead><tr>
@@ -2900,6 +2908,8 @@ function buildAndRenderAgingTable(){
   const tb=document.getElementById('agingTable');let data=window._agingData||[];
   if(currentStageCrossFilter)data=data.filter(p=>p.stage===currentStageCrossFilter);
   else{if(currentAgingFilter==='active')data=data.filter(p=>!p.completed);else if(currentAgingFilter==='over30')data=data.filter(p=>p.days>30&&!p.completed);else if(currentAgingFilter==='completed')data=data.filter(p=>p.completed)}
+  const srch=(document.getElementById('agingSearchInput')||{}).value||'';
+  if(srch.trim())data=data.filter(p=>(p.name||'').toLowerCase().includes(srch.trim().toLowerCase()));
   data.sort((a,b)=>{let va=a[currentSortKey],vb=b[currentSortKey];if(va==null)return currentSortAsc?1:-1;if(vb==null)return currentSortAsc?-1:1;if(typeof va==='string')return currentSortAsc?va.localeCompare(vb):vb.localeCompare(va);return currentSortAsc?va-vb:vb-va});
   ['name','city','stage','stageDate','days','cap'].forEach(col=>{const ind=document.getElementById('sort_'+col);if(ind){if(currentSortKey===col){ind.textContent=currentSortAsc?' ▲':' ▼';ind.style.color='var(--ac)'}else ind.textContent=''}});
   tb.innerHTML=data.map(p=>{const c=stageColorMap[p.stage]||'var(--tx)';const safe=p.name.replace(/'/g,"\\'");return `<tr style="cursor:pointer" onclick="openAgingModal('${safe}')"><td style="font-weight:500;color:var(--brand-cyan)">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${c}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td><td>${p.cap||'—'}</td></tr>`}).join('');
