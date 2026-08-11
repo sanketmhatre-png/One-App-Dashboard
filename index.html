@@ -977,14 +977,11 @@ function calculateProjectStages(){
   const projNames=[...new Set(hoto1.map(r=>g(r,'Project name')).filter(Boolean))];const results=[];
 
   projNames.forEach(proj=>{
-    // FIX: case-insensitive project name matching — sheets may have different capitalisation
-    // e.g. HOTO1="Marudhar residency" but DEV Task="Marudhar Residency"
-    const projLow=proj.toLowerCase();
-    const h1Rows=hoto1.filter(r=>g(r,'Project name').toLowerCase()===projLow);
-    const dRows=devTask.filter(r=>g(r,'Project Name').toLowerCase()===projLow);
-    const d3Rows=d3.filter(r=>g(r,'Project Name').toLowerCase()===projLow);
-    const aRows=approval.filter(r=>g(r,'Lead name').toLowerCase()===projLow);
-    const h2Rows=hoto2.filter(r=>g(r,'Project name').toLowerCase()===projLow);
+    const h1Rows=hoto1.filter(r=>g(r,'Project name')===proj);
+    const dRows=devTask.filter(r=>g(r,'Project Name')===proj);
+    const d3Rows=d3.filter(r=>g(r,'Project Name')===proj);
+    const aRows=approval.filter(r=>g(r,'Lead name')===proj);
+    const h2Rows=hoto2.filter(r=>g(r,'Project name')===proj);
 
     const h1CompDate=maxD(h1Rows,'HOTO 1 completed on');const devDate=maxD(dRows,'DEV Completed Timestamp');
     const auditDate=maxD(dRows,'Audit Completed on');const d3ApprDate=maxD(d3Rows,'3D Approved on');
@@ -998,29 +995,42 @@ function calculateProjectStages(){
     const h2DoneRows=h2Rows.filter(r=>g(r,'All discussions completed?')==='YES');const h2Date=maxD(h2DoneRows,'HOTO 2 completed On');
 
     const c_HOTO1=h1Rows.some(r=>g(r,'HOTO 1 completed ?')==='Completed');
-    // FIX: ANY-row check — DEV Complete when at least one row has the timestamp
-    // Old ALL-rows check broke projects with DEV 1+DEV 2 rows (one row blank = stuck in stage)
-    const c_DEV=dRows.some(r=>g(r,'DEV Completed Timestamp')!=='');
-    const c_DEV_Approve=dRows.some(r=>g(r,'Audit Completed on')!=='');
+    const c_DEV=dRows.some(r=>!!g(r,'DEV Completed Timestamp'));
+    const c_DEV_Approve=dRows.some(r=>!!g(r,'Audit Completed on'));
     const c_3DDesign=!!d3ApprDate;const c_QHSE=!!qhseDate;const c_TSM_Layout=!!tsmLayoutDate;const c_TSM=!!tsmDate;
-    // FIX: 3D Design Admin Approval — at least one row approved is enough
-    const c_Design=d3Rows.some(r=>g(r,'3D Design Admin Approval Timestamp')!=='');
+    const c_Design=d3Rows.some(r=>!!g(r,'3D Design Admin Approval Timestamp'));
     const totalLeads=aRows.filter(r=>g(r,'Lead name')).length;const c_Finance=totalLeads>0&&totalLeads===finApprRows.length;
     const c_Anshuman=totalLeads>0&&totalLeads===anshApprRows.length;const c_CX=cxApprRows.length>0;const c_HOTO2=h2DoneRows.length>0;
 
     let stage,stageDate;
     if(!c_HOTO1){stage='1 HOTO 1 Stage';stageDate=h1CompDate}
-    else if(c_HOTO1&&!c_DEV){stage='2 DEV Stage';stageDate=h1CompDate}
+    else if(c_HOTO1&&!c_DEV){
+      // Only show DEV Stage if the project exists in DEV Task sheet
+      if(dRows.length>0){stage='2 DEV Stage';stageDate=h1CompDate}
+      else{stage='1 HOTO 1 Stage';stageDate=h1CompDate}
+    }
     else if(c_DEV&&!c_DEV_Approve){stage='2.5 DEV Approve Stage';stageDate=devDate}
-    else if(c_DEV_Approve&&!c_3DDesign){stage='2.7 3D Design Stage';stageDate=auditDate}
+    else if(c_DEV_Approve&&!c_3DDesign){
+      // Only show 3D Design Stage if project exists in 3D Process sheet
+      if(d3Rows.length>0){stage='2.7 3D Design Stage';stageDate=auditDate}
+      else{stage='2.5 DEV Approve Stage';stageDate=devDate}
+    }
     else if(c_3DDesign&&!c_QHSE){stage='3 QHSE Stage';stageDate=d3ApprDate}
     else if(c_QHSE&&!c_TSM_Layout){stage='4 TSM Layout Stage';stageDate=qhseDate}
     else if(c_TSM_Layout&&!c_TSM){stage='4.5 TSM Stage';stageDate=tsmLayoutDate}
     else if(c_TSM&&!c_Design){stage='5 Design Stage';stageDate=tsmDate}
-    else if(c_Design&&!c_Finance){stage='6 Finance Approval';stageDate=designDate}
+    else if(c_Design&&!c_Finance){
+      // Only show Finance Approval if project exists in Approval sheet
+      if(aRows.length>0){stage='6 Finance Approval';stageDate=designDate}
+      else{stage='5 Design Stage';stageDate=tsmDate}
+    }
     else if(c_Finance&&!c_Anshuman){stage='7 Anshuman Approval';stageDate=finDate}
     else if(c_Anshuman&&!c_CX){stage='8 CX Approval';stageDate=anshDate}
-    else if(c_CX&&!c_HOTO2){stage='9 HOTO 2 Stage';stageDate=cxDate}
+    else if(c_CX&&!c_HOTO2){
+      // Only show HOTO 2 Stage if project exists in HOTO 2 sheet
+      if(h2Rows.length>0){stage='9 HOTO 2 Stage';stageDate=cxDate}
+      else{stage='8 CX Approval';stageDate=anshDate}
+    }
     else if(c_HOTO2){stage='✓ HOTO 2 Completed';stageDate=h2Date}
     else{stage='Unknown';stageDate=null}
 
@@ -1036,9 +1046,8 @@ function renderProjectAnalysis(){
   const approval=DATA['Approval']||[];const hoto2=DATA['HOTO 2']||[];
 
   // Build HOTO 1 project name set & map (name→row) for pipeline filtering
-  // FIX: normalise project names to lowercase for cross-sheet matching
-  const h1NameSet=new Set(hoto1.map(r=>g(r,'Project name').toLowerCase()).filter(Boolean));
-  const h1Map={};hoto1.forEach(r=>{const n=g(r,'Project name');if(n)h1Map[n.toLowerCase()]=r});
+  const h1NameSet=new Set(hoto1.map(r=>g(r,'Project name')).filter(Boolean));
+  const h1Map={};hoto1.forEach(r=>{const n=g(r,'Project name');if(n)h1Map[n]=r});
 
   // Total projects (HOTO 1 with non-blank City)
   const hotoComplete=hoto1.filter(r=>{const c=g(r,'City');return c&&c!==''}).length;
@@ -1047,36 +1056,36 @@ function renderProjectAnalysis(){
   const hoto1Completed=hoto1.filter(r=>{const s=g(r,'HOTO 1 Status').toLowerCase();return s==='completed'||s==='complete'}).length;
 
   // DEV Complete — distinct Project Name where 'DEV Completed Timestamp' (col L) is non-blank AND project in HOTO 1
-  const devCompleteCount=new Set(devTask.filter(r=>g(r,'DEV Completed Timestamp')!==''&&h1NameSet.has(g(r,'Project Name').toLowerCase())).map(r=>g(r,'Project Name')).filter(Boolean)).size;
+  const devCompleteCount=new Set(devTask.filter(r=>g(r,'DEV Completed Timestamp')!==''&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
 
   // DEV Approved — distinct Project Name where 'Audit Completed On' (col T) is non-blank AND project in HOTO 1
-  const devCompletedCount=new Set(devTask.filter(r=>g(r,'Audit Completed on')!==''&&h1NameSet.has(g(r,'Project Name').toLowerCase())).map(r=>g(r,'Project Name')).filter(Boolean)).size;
+  const devCompletedCount=new Set(devTask.filter(r=>g(r,'Audit Completed on')!==''&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
 
   // 3D Design — distinct Project Name where 3D Approved on not blank AND in HOTO 1
-  const d3CompletedCount=new Set(d3.filter(r=>g(r,'3D Approved on')!==''&&h1NameSet.has(g(r,'Project Name').toLowerCase())).map(r=>g(r,'Project Name')).filter(Boolean)).size;
+  const d3CompletedCount=new Set(d3.filter(r=>g(r,'3D Approved on')!==''&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
 
   // QHSE — distinct Project Name where QHSE Status=Approved AND in HOTO 1
-  const qhseCompletedCount=new Set(d3.filter(r=>g(r,'QHSE Status')==='Approved'&&h1NameSet.has(g(r,'Project Name').toLowerCase())).map(r=>g(r,'Project Name')).filter(Boolean)).size;
+  const qhseCompletedCount=new Set(d3.filter(r=>g(r,'QHSE Status')==='Approved'&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
 
   // TSM Layout — distinct Project Name where column AJ = Approved AND in HOTO 1
-  const tsmLayoutCount=new Set(d3.filter(r=>gCol(r,'AJ').toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name').toLowerCase())).map(r=>g(r,'Project Name')).filter(Boolean)).size;
+  const tsmLayoutCount=new Set(d3.filter(r=>gCol(r,'AJ').toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
 
   // TSM Approved — distinct Project Name where TSM Verification Status (col AQ) = Approved AND in HOTO 1
-  const tsmCompletedCount=new Set(d3.filter(r=>gCol(r,'AQ').toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name').toLowerCase())).map(r=>g(r,'Project Name')).filter(Boolean)).size;
+  const tsmCompletedCount=new Set(d3.filter(r=>gCol(r,'AQ').toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Project Name')).filter(Boolean)).size;
 
   // Finance — distinct Lead name where Finance Approved AND Lead name in HOTO 1
-  const financeCompletedCount=new Set(approval.filter(r=>g(r,'Finance Team Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name').toLowerCase())).map(r=>g(r,'Lead name')).filter(Boolean)).size;
+  const financeCompletedCount=new Set(approval.filter(r=>g(r,'Finance Team Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name'))).map(r=>g(r,'Lead name')).filter(Boolean)).size;
 
   // Anshuman — distinct Lead name where Anshuman Approved AND Lead name in HOTO 1
-  const anshumanCompletedCount=new Set(approval.filter(r=>g(r,'Anshuman Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name').toLowerCase())).map(r=>g(r,'Lead name')).filter(Boolean)).size;
+  const anshumanCompletedCount=new Set(approval.filter(r=>g(r,'Anshuman Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name'))).map(r=>g(r,'Lead name')).filter(Boolean)).size;
 
   // Client Approved — distinct Lead ID where 3D Design Sent to Client = Approved AND Project Name in HOTO 1
-  const clientApprovedCount=new Set(d3.filter(r=>(g(r,'3D Design Sent to Client for Approval Status')||'').trim()==='Approved'&&h1NameSet.has(g(r,'Project Name').toLowerCase())).map(r=>g(r,'Lead ID')).filter(Boolean)).size;
+  const clientApprovedCount=new Set(d3.filter(r=>(g(r,'3D Design Sent to Client for Approval Status')||'').trim()==='Approved'&&h1NameSet.has(g(r,'Project Name'))).map(r=>g(r,'Lead ID')).filter(Boolean)).size;
 
   // HOTO 2 Completed — distinct Lead ID where HOTO 2 Completed On not blank AND Project name in HOTO 1
   const h2Fields=Object.keys(hoto2[0]||{});
   const h2CompField=h2Fields.find(k=>k.toLowerCase().includes('hoto 2 completed on'))||'HOTO 2 Completed On';
-  const hoto2CompletedCount=new Set(hoto2.filter(r=>{const v=(r[h2CompField]||'').trim();const pn=g(r,'Project name');return v&&v!==''&&h1NameSet.has((pn||'').toLowerCase())}).map(r=>g(r,'Lead ID')).filter(Boolean)).size;
+  const hoto2CompletedCount=new Set(hoto2.filter(r=>{const v=(r[h2CompField]||'').trim();const pn=g(r,'Project name');return v&&v!==''&&h1NameSet.has(pn)}).map(r=>g(r,'Lead ID')).filter(Boolean)).size;
 
   // Store for matrix
   window._paData={hoto1,devTask,d3,approval,hoto2,h1NameSet,h1Map,
@@ -1195,25 +1204,23 @@ function buildDesignerStageTATData(){
   };
 
   const devGrouped = {};
-  devTask.forEach(r=>{ const pn=g(r,'Project Name');if(pn){const k=pn.toLowerCase();(devGrouped[k]=devGrouped[k]||[]).push(r);} });
+  devTask.forEach(r=>{ const pn=g(r,'Project Name');if(pn)(devGrouped[pn]=devGrouped[pn]||[]).push(r); });
   const d3Grouped = groupD3ByProject(d3);
   const h1Map = {};
-  hoto1.forEach(r=>{ const pn=g(r,'Project name');if(pn) h1Map[pn.toLowerCase()]=r; });
+  hoto1.forEach(r=>{ const pn=g(r,'Project name');if(pn) h1Map[pn]=r; });
   const apprGrouped = {};
-  approval.forEach(r=>{ const pn=g(r,'Lead name');if(pn){const k=pn.toLowerCase();(apprGrouped[k]=apprGrouped[k]||[]).push(r);} });
+  approval.forEach(r=>{ const pn=g(r,'Lead name');if(pn)(apprGrouped[pn]=apprGrouped[pn]||[]).push(r); });
 
   // Union of HOTO 1 + 3D Process so no designer project is missed
-  // Keys already lowercase — union is safe
   const allNames = new Set([...Object.keys(h1Map), ...Object.keys(d3Grouped)]);
 
   const result = [];
 
   [...allNames].forEach(pn => {
-    const key = pn.toLowerCase();
-    const devRows  = devGrouped[key]  || [];
-    const d3Rows   = d3Grouped[key]   || [];
-    const h1Row    = h1Map[key];
-    const apprRows = apprGrouped[key] || [];
+    const devRows  = devGrouped[pn]  || [];
+    const d3Rows   = d3Grouped[pn]   || [];
+    const h1Row    = h1Map[pn];
+    const apprRows = apprGrouped[pn] || [];
     const last = (rows, col) => [...rows].reverse().find(r => gCol(r, col));
 
     // DS1: DEV Task col H → col T; auditor name from col S (email)
@@ -1293,25 +1300,24 @@ function buildStageTATData(){
 
   // Group every sheet by project name
   const devGrouped  = {};
-  devTask.forEach(r  => { const pn=g(r,'Project Name'); if(pn){const k=pn.toLowerCase();(devGrouped[k]=devGrouped[k]||[]).push(r);} });
+  devTask.forEach(r  => { const pn=g(r,'Project Name'); if(pn)(devGrouped[pn]=devGrouped[pn]||[]).push(r); });
   const d3Grouped   = groupD3ByProject(d3);
   const h1Map       = {};
-  hoto1.forEach(r   => { const pn=g(r,'Project name'); if(pn) h1Map[pn.toLowerCase()]=r; });
+  hoto1.forEach(r   => { const pn=g(r,'Project name'); if(pn) h1Map[pn]=r; });
   const h2Grouped   = {};
-  hoto2.forEach(r   => { const pn=g(r,'Project name'); if(pn){const k=pn.toLowerCase();(h2Grouped[k]=h2Grouped[k]||[]).push(r);} });
+  hoto2.forEach(r   => { const pn=g(r,'Project name'); if(pn)(h2Grouped[pn]=h2Grouped[pn]||[]).push(r); });
   const apprGrouped = {};
-  approval.forEach(r=> { const pn=g(r,'Lead name');    if(pn){const k=pn.toLowerCase();(apprGrouped[k]=apprGrouped[k]||[]).push(r);} });
+  approval.forEach(r=> { const pn=g(r,'Lead name');    if(pn)(apprGrouped[pn]=apprGrouped[pn]||[]).push(r); });
 
   // HOTO 1 is the master — only process projects that exist here
   const allNames = new Set(Object.keys(h1Map));
 
   const rows = [...allNames].map(pn => {
-    const key = pn.toLowerCase();
-    const devRows  = devGrouped[key]  || [];
-    const d3Rows   = d3Grouped[key]   || [];
-    const h1Row    = h1Map[key];
-    const h2Rows   = h2Grouped[key]   || [];
-    const apprRows = apprGrouped[key] || [];
+    const devRows  = devGrouped[pn]  || [];
+    const d3Rows   = d3Grouped[pn]   || [];
+    const h1Row    = h1Map[pn];
+    const h2Rows   = h2Grouped[pn]   || [];
+    const apprRows = apprGrouped[pn] || [];
 
     // ── date anchors ──────────────────────────────────────────────────
     // S1 start : DEV Task col H  'Assigned Timestamp'
@@ -1440,7 +1446,7 @@ function renderTAT(){
     const hoto1TAT = tatDays(g(h1,'Approval Email Sent On'), g(h1,'HOTO 1 completed on'));
 
     // 2. DEV TAT: 'Assigned Timestamp' -> 'Audit Completed On'  (DEV Task, matched by Project Name)
-    const devRows = devTask.filter(r => g(r,'Project Name').toLowerCase() === pn.toLowerCase());
+    const devRows = devTask.filter(r => g(r,'Project Name') === pn);
     let devTAT = null;
     if(devRows.length){
       const vals = devRows.map(r => tatDays(g(r,'Assigned Timestamp'), g(r,'Audit Completed on'))).filter(v=>v!=null);
@@ -1448,7 +1454,7 @@ function renderTAT(){
     }
 
     // 3D Process rows for this project
-    const d3Rows = d3.filter(r => g(r,'Project Name').toLowerCase() === pn.toLowerCase());
+    const d3Rows = d3.filter(r => g(r,'Project Name') === pn);
 
     // 3. 3D Design TAT: '3D Design Start Time...' -> '3D Completed on'
     let d3TAT = null;
@@ -1558,29 +1564,29 @@ function renderMatrix(mode){
     if(stageKey==='HOTO 1 Complete'){
       hoto1.forEach(r=>{const st=g(r,'HOTO 1 Status').toLowerCase();if(st==='completed'||st==='complete')s.add(g(r,'Project name'))});
     } else if(stageKey==='DEV Complete'){
-      devTask.forEach(r=>{if(g(r,'DEV Completed Timestamp')!==''&&h1NameSet.has(g(r,'Project Name').toLowerCase()))s.add(g(r,'Project Name'))});
+      devTask.forEach(r=>{if(g(r,'DEV Completed Timestamp')!==''&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
     } else if(stageKey==='DEV Approved'){
-      devTask.forEach(r=>{if(g(r,'Audit Completed on')!==''&&h1NameSet.has(g(r,'Project Name').toLowerCase()))s.add(g(r,'Project Name'))});
+      devTask.forEach(r=>{if(g(r,'Audit Completed on')!==''&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
     } else if(stageKey==='3D Design Approved'){
-      d3.forEach(r=>{if(g(r,'3D Approved on')!==''&&h1NameSet.has(g(r,'Project Name').toLowerCase()))s.add(g(r,'Project Name'))});
+      d3.forEach(r=>{if(g(r,'3D Approved on')!==''&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
     } else if(stageKey==='QHSE Approved'){
-      d3.forEach(r=>{if(g(r,'QHSE Status')==='Approved'&&h1NameSet.has(g(r,'Project Name').toLowerCase()))s.add(g(r,'Project Name'))});
+      d3.forEach(r=>{if(g(r,'QHSE Status')==='Approved'&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
     } else if(stageKey==='TSM Layout'){
-      d3.forEach(r=>{if(gCol(r,'AJ').toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name').toLowerCase()))s.add(g(r,'Project Name'))});
+      d3.forEach(r=>{if(gCol(r,'AJ').toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
     } else if(stageKey==='TSM Verified'){
-      d3.forEach(r=>{if(gCol(r,'AQ').toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name').toLowerCase()))s.add(g(r,'Project Name'))});
+      d3.forEach(r=>{if(gCol(r,'AQ').toLowerCase()==='approved'&&h1NameSet.has(g(r,'Project Name')))s.add(g(r,'Project Name'))});
     } else if(stageKey==='Finance Approved'){
-      approval.forEach(r=>{if(g(r,'Finance Team Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name').toLowerCase()))s.add(g(r,'Lead name'))});
+      approval.forEach(r=>{if(g(r,'Finance Team Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name')))s.add(g(r,'Lead name'))});
     } else if(stageKey==='Anshuman Approved'){
-      approval.forEach(r=>{if(g(r,'Anshuman Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name').toLowerCase()))s.add(g(r,'Lead name'))});
+      approval.forEach(r=>{if(g(r,'Anshuman Approval Status')==='Approved'&&h1NameSet.has(g(r,'Lead name')))s.add(g(r,'Lead name'))});
     } else if(stageKey==='Client Approved'){
       // need Lead ID → Project Name mapping
       const lidToProj={};d3.forEach(r=>{const lid=g(r,'Lead ID');const pn=g(r,'Project Name');if(lid&&pn)lidToProj[lid]=pn});
-      d3.forEach(r=>{if((g(r,'3D Design Sent to Client for Approval Status')||'').trim()==='Approved'&&h1NameSet.has(g(r,'Project Name').toLowerCase())){
+      d3.forEach(r=>{if((g(r,'3D Design Sent to Client for Approval Status')||'').trim()==='Approved'&&h1NameSet.has(g(r,'Project Name'))){
         s.add(g(r,'Project Name'));
       }});
     } else if(stageKey==='HOTO 2 Completed'){
-      hoto2.forEach(r=>{const v=(r[h2CompField]||'').trim();const pn=g(r,'Project name');if(v&&v!==''&&h1NameSet.has((pn||'').toLowerCase()))s.add(pn)});
+      hoto2.forEach(r=>{const v=(r[h2CompField]||'').trim();const pn=g(r,'Project name');if(v&&v!==''&&h1NameSet.has(pn))s.add(pn)});
     }
     return s;
   }
@@ -1633,7 +1639,7 @@ function crossFilteredProjectNames(){
   const {mode, dim} = window._crossFilter;
   const out = new Set();
   h1NameSet.forEach(pn=>{
-    const h1r = h1Map[(pn||'').toLowerCase()];
+    const h1r = h1Map[pn];
     if(!h1r) return;
     if(mode==='city'){
       if((g(h1r,'City')||'Unknown')===dim) out.add(pn);
@@ -1734,7 +1740,7 @@ function openProjModal(mode, dim){
   // Filter to projects in this city / capacity cluster
   const rows = stageData.filter(r=>{
     if(mode==='city') return (r.city||'Unknown')===dim;
-    const h1r = h1Map ? h1Map[(r.name||'').toLowerCase()] : null;
+    const h1r = h1Map ? h1Map[r.name] : null;
     const kw = h1r ? num(g(h1r,'Project Size (Capacity)')) : 0;
     return (capBucket(kw)||'Unknown')===dim;
   });
@@ -1830,7 +1836,7 @@ function renderStageDetailTable(mode){
     // Per-project rows — actual TAT values, green/red vs overall avg
     const avgs = STAGE_KEYS.map(sk => avgOf(stageData.map(r=>r[sk]).filter(v=>v!=null)));
     tbody = stageData.map(r=>{
-      const h1r = h1Map ? h1Map[(r.name||'').toLowerCase()] : null;
+      const h1r = h1Map ? h1Map[r.name] : null;
       const cap = h1r ? (num(g(h1r,'Project Size (Capacity)'))||'—') : '—';
       const stageCells = STAGE_KEYS.map((sk,i) => fmtCell(r[sk], avgs[i])).join('');
       const total = STAGE_KEYS.reduce((s,k)=>s+(r[k]??0),0);
@@ -1852,7 +1858,7 @@ function renderStageDetailTable(mode){
     // City or Capacity — group projects, compute avg TAT per stage for each group
     const getDim = r => {
       if(mode==='city') return r.city || 'Unknown';
-      const h1r = h1Map ? h1Map[(r.name||'').toLowerCase()] : null;
+      const h1r = h1Map ? h1Map[r.name] : null;
       const kw = h1r ? num(g(h1r,'Project Size (Capacity)')) : 0;
       return capBucket(kw) || 'Unknown';
     };
@@ -1970,14 +1976,14 @@ function renderDesignerTab(){
   const grouped = groupD3ByProject(d3);
 
   const h1Map = {};
-  hoto1.forEach(r => { const pn = g(r,'Project name'); if(pn) h1Map[(pn||'').toLowerCase()] = r; });
+  hoto1.forEach(r => { const pn = g(r,'Project name'); if(pn) h1Map[pn] = r; });
 
   // Unique per-project stage TAT data (used for KPI accuracy — not duplicated across multi-designer projects)
   const stageData = buildDesignerStageTATData();
   window._stageTatDataRaw = stageData;
   const stageMap = {};
   stageData.forEach(s => {
-    const h1r = h1Map[(s.name||'').toLowerCase()];
+    const h1r = h1Map[s.name];
     s.cap = h1r ? num(g(h1r,'Project Size (Capacity)')) : 0;
     stageMap[s.name] = s;
   });
@@ -1987,7 +1993,7 @@ function renderDesignerTab(){
   // Just attach cap from h1Map for any row that's missing it
   // stageData already returns one row per (project × 3D-designer) — use directly
   const flat = stageData.map(r => {
-    const h1r = h1Map[(r.name||'').toLowerCase()];
+    const h1r = h1Map[r.name];
     return {
       ...r,
       cap:    r.cap    || (h1r ? num(g(h1r,'Project Size (Capacity)')) : 0),
@@ -2328,11 +2334,10 @@ function openDsModal(projectName, highlightStage){
   const approval = DATA['Approval']   || [];
   const d3Groups  = groupD3ByProject(d3);
 
-  const _pnLow = projectName.toLowerCase();
-  const devRows  = devTask.filter(r=>g(r,'Project Name').toLowerCase()===_pnLow);
-  const d3Rows   = d3Groups[_pnLow] || [];
-  const h1Row    = hoto1.find(r=>g(r,'Project name').toLowerCase()===_pnLow);
-  const apprRows = approval.filter(r=>g(r,'Lead name').toLowerCase()===_pnLow);
+  const devRows  = devTask.filter(r=>g(r,'Project Name')===projectName);
+  const d3Rows   = d3Groups[projectName] || [];
+  const h1Row    = hoto1.find(r=>g(r,'Project name')===projectName);
+  const apprRows = approval.filter(r=>g(r,'Lead name')===projectName);
 
   // Get last-entry dates (same logic as buildDesignerStageTATData)
   const last = (rows, col) => [...rows].reverse().find(r=>gCol(r,col));
@@ -2470,9 +2475,8 @@ function groupD3ByProject(d3){
   d3.forEach(r=>{
     const pn = g(r,'Project Name');
     if(!pn) return;
-    const key = pn.toLowerCase();
-    if(!map[key]) map[key] = [];
-    map[key].push(r);
+    if(!map[pn]) map[pn] = [];
+    map[pn].push(r);
   });
   return map;
 }
@@ -2753,7 +2757,7 @@ function renderStageAnalysis(cfg){
 
   // Classify each project
   const enriched = stageData.map(r=>{
-    const h1r = h1Map[(r.name||'').toLowerCase()];
+    const h1r = h1Map[r.name];
     const hasAll = sKeys.every(k=>r[k]!=null);
     const hasAny = sKeys.some(k=>r[k]!=null);
     const cap = h1r ? (num(g(h1r,'Project Size (Capacity)'))||0) : 0;
@@ -2942,13 +2946,12 @@ function openAgingModal(projectName){
   const approval = DATA['Approval']   || [];
   const hoto2    = DATA['HOTO 2']     || [];
 
-  const _pnLow2 = projectName.toLowerCase();
-  const h1Rows   = hoto1.filter(r=>g(r,'Project name').toLowerCase()===_pnLow2);
-  const devRows  = devTask.filter(r=>g(r,'Project Name').toLowerCase()===_pnLow2);
+  const h1Rows   = hoto1.filter(r=>g(r,'Project name')===projectName);
+  const devRows  = devTask.filter(r=>g(r,'Project Name')===projectName);
   const d3Groups = groupD3ByProject(d3);
-  const d3Rows   = d3Groups[_pnLow2] || [];
-  const apprRows = approval.filter(r=>g(r,'Lead name').toLowerCase()===_pnLow2);
-  const h2Rows   = hoto2.filter(r=>g(r,'Project name').toLowerCase()===_pnLow2);
+  const d3Rows   = d3Groups[projectName] || [];
+  const apprRows = approval.filter(r=>g(r,'Lead name')===projectName);
+  const h2Rows   = hoto2.filter(r=>g(r,'Project name')===projectName);
   const h1Row    = h1Rows[0];
 
   const last = (rows, col) => [...rows].reverse().find(r=>gCol(r,col));
