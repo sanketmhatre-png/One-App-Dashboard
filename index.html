@@ -617,16 +617,27 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
       <table class="mt">
         <thead><tr>
           <th>Project</th><th>City</th><th>kWp</th><th>Visit #</th><th>DEV Type</th>
-          <th>Scheduled Date</th><th>DEV Start</th><th>DEV Completed</th>
+          <th>Scheduled Date</th><th>DEV Start</th><th>DEV Completed</th><th>Tenure</th>
           <th>Audit Status</th><th>Rejection Reason</th><th>Remarks</th>
         </tr></thead>
         <tbody id="revisitTable"></tbody>
       </table>
     </div>
   </div>
+  <div class="cd">
+    <div class="ct"><div class="dot" style="background:var(--pr)"></div>Rejected & RE-Visit Projects</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center">
+      <div style="position:relative;flex:1;min-width:180px;max-width:320px">
+        <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--tm);font-size:13px;pointer-events:none">🔍</span>
+        <input id="rejectRevisitSearch" type="text" placeholder="Search project…" oninput="renderRejectRevisitView()"
+          style="width:100%;padding:7px 10px 7px 30px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-size:12px;outline:none;font-family:inherit"
+          onfocus="this.style.borderColor='var(--ac)'" onblur="this.style.borderColor='var(--bd)'">
+      </div>
+      <div id="rejectRevisitKpis" style="display:flex;gap:8px"></div>
+    </div>
+    <div id="rejectRevisitView" style="overflow-x:auto"></div>
+  </div>
 </div>
-
-<!-- TAB 11: 3D STAGE -->
 <div class="pn" id="t11">
   <div class="kr sa-kpi-row" id="sa11Kpis"></div>
   <div id="sa11Banner" class="sa-banner" style="display:none"></div>
@@ -935,6 +946,7 @@ function renderDashboard(){
   document.getElementById('devTypeBars').innerHTML=devTypes.map((d,i)=>sbarHTML(d[0],d[1],pct(d[1],dtMax),colors[i%colors.length])).join('');
 
   renderRevisitTable();
+  renderRejectRevisitView();
 
   // TAB 2
   render3DProcess(d3);
@@ -1055,16 +1067,44 @@ function renderRevisitTable(){
   const srch=(document.getElementById('revisitSearchInput')||{}).value||'';
   if(srch.trim())data=data.filter(r=>r.name.toLowerCase().includes(srch.trim().toLowerCase()));
 
+  // Sort by project name, then visit order (FIRST DEV first, then RE-Visit 1, 2, etc.)
+  data.sort((a,b)=>{
+    const nameComp=a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    if(nameComp!==0)return nameComp;
+    // FIRST DEV before RE-Visit, then by visit number
+    if(!a.isRevisit&&b.isRevisit)return -1;
+    if(a.isRevisit&&!b.isRevisit)return 1;
+    return(a.flag||'').localeCompare(b.flag||'');
+  });
+
   // Render table
   const tb=document.getElementById('revisitTable');
-  tb.innerHTML=data.map(r=>{
+  const now=new Date();
+  let lastProj='';
+  tb.innerHTML=data.map((r,i)=>{
     const statusColor=r.auditStatus==='Approved'?'var(--gn)':r.auditStatus==='Rejected'?'var(--rd)':'var(--tm)';
     const flagColor=r.isRevisit?'var(--rd)':'var(--gn)';
     const schedFmt=r.scheduledDate?new Date(r.scheduledDate).toLocaleDateString():'—';
     const startFmt=r.startTime?new Date(r.startTime).toLocaleDateString():'—';
     const compFmt=r.completedTime?new Date(r.completedTime).toLocaleDateString():'—';
-    return `<tr>
-      <td style="font-weight:500;color:var(--brand-cyan);white-space:nowrap">${r.name}</td>
+    // Tenure: DEV Start → DEV Completed (or today if still in progress)
+    let tenureCell='<td style="text-align:center;color:var(--tm)">—</td>';
+    if(r.startTime){
+      const startD=new Date(r.startTime);
+      const endD=r.completedTime?new Date(r.completedTime):now;
+      const days=Math.round((endD-startD)/(1000*60*60*24));
+      const pending=!r.completedTime;
+      const bg=pending?'rgba(251,191,36,.15)':days<=5?'rgba(34,197,94,.15)':'rgba(239,68,68,.15)';
+      const col=pending?'var(--yw,#fbbf24)':days<=5?'var(--gn)':'var(--rd)';
+      tenureCell=`<td style="text-align:center"><span style="padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700;background:${bg};color:${col}">${days}d${pending?' ⏳':''}</span></td>`;
+    }
+    // Visual grouping: highlight revisit rows with subtle border-top when project changes
+    const isNewProj=r.name.toLowerCase()!==lastProj;
+    lastProj=r.name.toLowerCase();
+    const rowStyle=isNewProj?'border-top:2px solid var(--bd)':'background:rgba(255,255,255,.02)';
+    const projCell=isNewProj?`<td style="font-weight:500;color:var(--brand-cyan);white-space:nowrap">${r.name}</td>`:`<td style="color:var(--tm);font-size:11px;padding-left:12px">↳ ${r.name}</td>`;
+    return `<tr style="${rowStyle}">
+      ${projCell}
       <td>${r.city||'—'}</td>
       <td>${r.cap||'—'}</td>
       <td><span style="padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600;background:${r.isRevisit?'rgba(239,68,68,.15)':'rgba(34,197,94,.15)'};color:${flagColor}">${r.flag}</span></td>
@@ -1072,11 +1112,119 @@ function renderRevisitTable(){
       <td style="font-size:11px;color:var(--tm)">${schedFmt}</td>
       <td style="font-size:11px;color:var(--tm)">${startFmt}</td>
       <td style="font-size:11px;color:var(--tm)">${compFmt}</td>
+      ${tenureCell}
       <td><span style="font-size:10px;font-weight:600;color:${statusColor}">${r.auditStatus}</span></td>
       <td style="font-size:10px;color:var(--rd);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.rejectReason.replace(/"/g,'&quot;')}">${r.rejectReason}</td>
       <td style="font-size:10px;color:var(--tm);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.remarks.replace(/"/g,'&quot;')}">${r.remarks}</td>
     </tr>`;
   }).join('');
+}
+
+function renderRejectRevisitView(){
+  const devTask=DATA['DEV Task']||[];const hoto1=DATA['HOTO 1']||[];const devReq=DATA['DEV Request']||[];
+  const normName=n=>(n||'').trim().toLowerCase();
+
+  // Project info lookup
+  const projInfo={};
+  hoto1.forEach(r=>{const pn=(g(r,'Project name')||'').trim();if(pn)projInfo[normName(pn)]={city:g(r,'City'),cap:num(g(r,'Project Size (Capacity)'))}});
+  devReq.forEach(r=>{const pn=(g(r,'Project name')||'').trim();if(pn&&!projInfo[normName(pn)])projInfo[normName(pn)]={city:g(r,'City'),cap:0}});
+
+  // Build all rows
+  const allRows=devTask.map(r=>{
+    const pn=(g(r,'Project Name')||g(r,'Project name')||'').trim();
+    const info=projInfo[normName(pn)]||{city:'',cap:0};
+    const flag=(g(r,'Revision Flag')||'').trim();
+    const auditStatus=(g(r,'Audit Status')||'').trim();
+    return{
+      name:pn, city:info.city||g(r,'City')||'', cap:info.cap,
+      flag:flag||'FIRST DEV',
+      devType:(g(r,'DEV Type')||'').trim()||'—',
+      startTime:g(r,'DEV Start Time')||'',
+      completedTime:g(r,'DEV Completed Timestamp')||'',
+      auditStatus:auditStatus||'Pending',
+      rejectReason:(g(r,'Reason for rejection')||g(r,'Rejected reason')||'').trim()||'—',
+      remarks:(g(r,'Revision Remarks')||g(r,'DEV Remarks')||'').trim()||'—',
+      isRevisit:/re-?visit/i.test(flag),
+      isRejected:auditStatus.toLowerCase()==='rejected'
+    };
+  }).filter(r=>r.name);
+
+  // Only rejected + revisit entries
+  const rejected=allRows.filter(r=>r.isRejected);
+  const revisits=allRows.filter(r=>r.isRevisit&&!r.isRejected);
+
+  // Search filter
+  const srch=(document.getElementById('rejectRevisitSearch')||{}).value||'';
+  const filterFn=r=>!srch.trim()||r.name.toLowerCase().includes(srch.trim().toLowerCase());
+  const filteredRejected=rejected.filter(filterFn);
+  const filteredRevisits=revisits.filter(filterFn);
+
+  // KPI badges
+  document.getElementById('rejectRevisitKpis').innerHTML=
+    `<span style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(239,68,68,.15);color:var(--rd)">Rejected: ${filteredRejected.length}</span>`+
+    `<span style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(251,191,36,.15);color:var(--yw,#fbbf24)">RE-Visits: ${filteredRevisits.length}</span>`+
+    `<span style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;background:rgba(34,197,94,.15);color:var(--gn)">Total: ${filteredRejected.length+filteredRevisits.length}</span>`;
+
+  const now=new Date();
+  function renderRow(r){
+    const statusColor=r.isRejected?'var(--rd)':r.auditStatus==='Approved'?'var(--gn)':'var(--tm)';
+    const flagColor=r.isRevisit?'var(--rd)':'var(--gn)';
+    const startFmt=r.startTime?new Date(r.startTime).toLocaleDateString():'—';
+    const compFmt=r.completedTime?new Date(r.completedTime).toLocaleDateString():'—';
+    let tenureCell='—';
+    if(r.startTime){
+      const startD=new Date(r.startTime);const endD=r.completedTime?new Date(r.completedTime):now;
+      const days=Math.round((endD-startD)/(1000*60*60*24));const pending=!r.completedTime;
+      const bg=pending?'rgba(251,191,36,.15)':days<=5?'rgba(34,197,94,.15)':'rgba(239,68,68,.15)';
+      const col=pending?'var(--yw,#fbbf24)':days<=5?'var(--gn)':'var(--rd)';
+      tenureCell=`<span style="padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700;background:${bg};color:${col}">${days}d${pending?' ⏳':''}</span>`;
+    }
+    return `<tr>
+      <td style="font-weight:500;color:var(--brand-cyan);white-space:nowrap">${r.name}</td>
+      <td>${r.city||'—'}</td>
+      <td>${r.cap||'—'}</td>
+      <td><span style="padding:2px 7px;border-radius:6px;font-size:10px;font-weight:600;background:${r.isRevisit?'rgba(239,68,68,.15)':'rgba(34,197,94,.15)'};color:${flagColor}">${r.flag}</span></td>
+      <td style="font-size:11px">${r.devType}</td>
+      <td style="font-size:11px;color:var(--tm)">${startFmt}</td>
+      <td style="font-size:11px;color:var(--tm)">${compFmt}</td>
+      <td style="text-align:center">${tenureCell}</td>
+      <td><span style="font-size:10px;font-weight:600;color:${statusColor}">${r.auditStatus}</span></td>
+      <td style="font-size:10px;color:var(--rd);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.rejectReason.replace(/"/g,'&quot;')}">${r.rejectReason}</td>
+      <td style="font-size:10px;color:var(--tm);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.remarks.replace(/"/g,'&quot;')}">${r.remarks}</td>
+    </tr>`;
+  }
+
+  const thRow=`<tr><th>Project</th><th>City</th><th>kWp</th><th>Visit #</th><th>DEV Type</th><th>DEV Start</th><th>DEV Completed</th><th>Tenure</th><th>Audit Status</th><th>Rejection Reason</th><th>Remarks</th></tr>`;
+
+  let html='';
+
+  // Section 1: Rejected entries
+  html+=`<div style="margin-bottom:16px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="width:10px;height:10px;border-radius:50%;background:var(--rd);display:inline-block"></span>
+      <span style="font-size:13px;font-weight:600;color:var(--rd)">Rejected Entries (${filteredRejected.length})</span>
+    </div>`;
+  if(filteredRejected.length>0){
+    html+=`<table class="mt"><thead>${thRow}</thead><tbody>${filteredRejected.map(renderRow).join('')}</tbody></table>`;
+  } else {
+    html+=`<div style="padding:12px;color:var(--tm);font-size:12px;text-align:center">No rejected entries found</div>`;
+  }
+  html+=`</div>`;
+
+  // Section 2: Revisit entries
+  html+=`<div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="width:10px;height:10px;border-radius:50%;background:var(--yw,#fbbf24);display:inline-block"></span>
+      <span style="font-size:13px;font-weight:600;color:var(--yw,#fbbf24)">RE-Visit Entries (${filteredRevisits.length})</span>
+    </div>`;
+  if(filteredRevisits.length>0){
+    html+=`<table class="mt"><thead>${thRow}</thead><tbody>${filteredRevisits.map(renderRow).join('')}</tbody></table>`;
+  } else {
+    html+=`<div style="padding:12px;color:var(--tm);font-size:12px;text-align:center">No revisit entries found</div>`;
+  }
+  html+=`</div>`;
+
+  document.getElementById('rejectRevisitView').innerHTML=html;
 }
 
 function calculateProjectStages(){
@@ -2886,6 +3034,7 @@ function renderAllStageTabs(){
   window._saH1Map = h1Map;
   STAGE_TAB_CONFIG.forEach(cfg => renderStageAnalysis(cfg));
   renderRevisitTable();
+  renderRejectRevisitView();
 }
 
 function saToggleFilter(tabId, type, value){
