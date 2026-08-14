@@ -402,6 +402,7 @@ body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;backgro
           <th class="sortable" onclick="sortAgingTable('stage')">Current Stage <span id="sort_stage"></span></th>
           <th class="sortable" onclick="sortAgingTable('stageDate')">Stage Since <span id="sort_stageDate"></span></th>
           <th class="sortable" onclick="sortAgingTable('days')">Days in Stage <span id="sort_days"></span></th>
+          <th class="sortable" onclick="sortAgingTable('devTat')">DEV TAT <span id="sort_devTat"></span></th>
           <th class="sortable" onclick="sortAgingTable('cap')">kWp <span id="sort_cap"></span></th>
         </tr></thead>
         <tbody id="agingTable"></tbody>
@@ -752,7 +753,7 @@ let currentSortAsc = false;
 let currentMatrixMode = 'capacity';
 
 const stageColorMap = {
-  '1 HOTO 1 Stage':'var(--ac)','2 DEV Stage':'var(--bl)','2.5 DEV Approve Stage':'var(--pr)',
+  '1 HOTO 1 Stage':'var(--ac)','2 DEV Stage':'var(--bl)',
   '2.7 3D Design Stage':'var(--cy)','3 QHSE Stage':'var(--gn)','4 TSM Layout Stage':'var(--pk)',
   '4.5 TSM Stage':'var(--rd)','5 Design Stage':'var(--ac)','6 Finance Approval':'var(--bl)',
   '7 Anshuman Approval':'var(--pr)','8 CX Approval':'var(--cy)','9 HOTO 2 Stage':'var(--gn)',
@@ -973,17 +974,57 @@ function daysBetween(d){if(!d)return null;return Math.floor((new Date()-d)/86400
 
 function calculateProjectStages(){
   const hoto1=DATA['HOTO 1']||[];const devTask=DATA['DEV Task']||[];const d3=DATA['3D Process']||[];
-  const approval=DATA['Approval']||[];const hoto2=DATA['HOTO 2']||[];
-  const projNames=[...new Set(hoto1.map(r=>g(r,'Project name')).filter(Boolean))];const results=[];
+  const approval=DATA['Approval']||[];const hoto2=DATA['HOTO 2']||[];const devReq=DATA['DEV Request']||[];
+
+  // Master list: all HOTO 1 project names
+  const h1Names=new Set(hoto1.map(r=>(g(r,'Project name')||'').trim()).filter(Boolean));
+
+  // Add DEV Request projects not in HOTO 1 — these have bypassed HOTO 1 and gone straight to DEV
+  const extraNames=new Set();
+  const extraCity={};
+  devReq.forEach(r=>{
+    const pn=(g(r,'Project name')||'').trim();const city=g(r,'City');
+    if(pn&&!h1Names.has(pn)){extraNames.add(pn);if(!extraCity[pn])extraCity[pn]=city||''}
+  });
+
+  // Build Lead ID → DEV Task rows map for extra projects (name mismatch fallback)
+  const devReqLeadIds={};
+  devReq.forEach(r=>{
+    const pn=(g(r,'Project name')||'').trim();const lid=(g(r,'Lead ID')||'').trim();
+    if(pn&&lid)devReqLeadIds[pn.toLowerCase()]=lid;
+  });
+  const devTaskByLeadId={};
+  devTask.forEach(r=>{
+    const lid=(g(r,'ID')||g(r,'Lead ID')||'').trim();if(lid){if(!devTaskByLeadId[lid])devTaskByLeadId[lid]=[];devTaskByLeadId[lid].push(r)}
+  });
+
+  const projNames=[...h1Names,...extraNames].filter(Boolean);const results=[];
+  const normName=n=>(n||'').trim().toLowerCase();
 
   projNames.forEach(proj=>{
-    const h1Rows=hoto1.filter(r=>g(r,'Project name')===proj);
-    const dRows=devTask.filter(r=>g(r,'Project Name')===proj);
-    const d3Rows=d3.filter(r=>g(r,'Project Name')===proj);
-    const aRows=approval.filter(r=>g(r,'Lead name')===proj);
-    const h2Rows=hoto2.filter(r=>g(r,'Project name')===proj);
+    const projNorm=normName(proj);
+    const isExtraProj=!h1Names.has(proj);
+    const h1Rows=hoto1.filter(r=>normName(g(r,'Project name'))===projNorm);
+    let dRows=devTask.filter(r=>normName(g(r,'Project Name'))===projNorm);
+    // Fallback: if no DEV Task rows found by name, try matching via Lead ID from DEV Request
+    if(dRows.length===0&&devReqLeadIds[projNorm]){
+      const lid=devReqLeadIds[projNorm];
+      dRows=devTaskByLeadId[lid]||[];
+    }
+    const d3Rows=d3.filter(r=>normName(g(r,'Project Name'))===projNorm);
+    const aRows=approval.filter(r=>normName(g(r,'Lead name'))===projNorm);
+    const h2Rows=hoto2.filter(r=>normName(g(r,'Project name'))===projNorm);
 
-    const h1CompDate=maxD(h1Rows,'HOTO 1 completed on');const devDate=maxD(dRows,'DEV Completed Timestamp');
+    const h1CompDate=maxD(h1Rows,'HOTO 1 completed on');
+    // DEV done = at least one row has DEV Completed Timestamp filled
+    const devDoneRows=dRows.filter(r=>!!g(r,'DEV Completed Timestamp'));
+    const devDate=maxD(devDoneRows,'DEV Completed Timestamp');
+    // DEV in-progress = has DEV Start Time AND DEV Completed Timestamp is blank
+    const devPendingRows=dRows.filter(r=>!!g(r,'DEV Start Time')&&!g(r,'DEV Completed Timestamp'));
+    const devScheduledDate=maxD(devPendingRows,'DEV Start Time');
+    // c_DEV_Started: any row has DEV Start Time AND no completed timestamp on that row
+    // This takes priority — even projects not in HOTO 1 should show as DEV Stage
+    const c_DEV_Started=devPendingRows.length>0&&devDoneRows.length===0;
     const auditDate=maxD(dRows,'Audit Completed on');const d3ApprDate=maxD(d3Rows,'3D Approved on');
     const qhseApprRows=d3Rows.filter(r=>g(r,'QHSE Status')==='Approved');const qhseDate=maxD(qhseApprRows,'QHSE Completed Date');
     const tsmLayoutDate=maxD(d3Rows.filter(r=>g(r,'TSM Approved On')),'TSM Approved On');
@@ -994,48 +1035,50 @@ function calculateProjectStages(){
     const cxApprRows=d3Rows.filter(r=>g(r,'3D Design Sent to Client for Approval Status')==='Approved');const cxDate=maxD(d3Rows,'3D Design Approval Timestamp');
     const h2DoneRows=h2Rows.filter(r=>g(r,'All discussions completed?')==='YES');const h2Date=maxD(h2DoneRows,'HOTO 2 completed On');
 
-    const c_HOTO1=h1Rows.some(r=>g(r,'HOTO 1 completed ?')==='Completed');
-    const c_DEV=dRows.some(r=>!!g(r,'DEV Completed Timestamp'));
-    const c_DEV_Approve=dRows.some(r=>!!g(r,'Audit Completed on'));
+    // Extra projects (in DEV Request but not HOTO 1) are treated as having passed HOTO 1
+    const c_HOTO1=isExtraProj||h1Rows.some(r=>g(r,'HOTO 1 completed ?')==='Completed');
+    // DEV Stage: pending scheduled rows exist AND no completed rows yet
+    // DEV Done: at least one row has DEV Completed Timestamp filled
+    const c_DEV=devDoneRows.length>0;
     const c_3DDesign=!!d3ApprDate;const c_QHSE=!!qhseDate;const c_TSM_Layout=!!tsmLayoutDate;const c_TSM=!!tsmDate;
     const c_Design=d3Rows.some(r=>!!g(r,'3D Design Admin Approval Timestamp'));
     const totalLeads=aRows.filter(r=>g(r,'Lead name')).length;const c_Finance=totalLeads>0&&totalLeads===finApprRows.length;
     const c_Anshuman=totalLeads>0&&totalLeads===anshApprRows.length;const c_CX=cxApprRows.length>0;const c_HOTO2=h2DoneRows.length>0;
 
     let stage,stageDate;
-    if(!c_HOTO1){stage='1 HOTO 1 Stage';stageDate=h1CompDate}
-    else if(c_HOTO1&&!c_DEV){
-      // Only show DEV Stage if the project exists in DEV Task sheet
-      if(dRows.length>0){stage='2 DEV Stage';stageDate=h1CompDate}
-      else{stage='1 HOTO 1 Stage';stageDate=h1CompDate}
-    }
-    else if(c_DEV&&!c_DEV_Approve){stage='2.5 DEV Approve Stage';stageDate=devDate}
-    else if(c_DEV_Approve&&!c_3DDesign){
-      // Only show 3D Design Stage if project exists in 3D Process sheet
-      if(d3Rows.length>0){stage='2.7 3D Design Stage';stageDate=auditDate}
-      else{stage='2.5 DEV Approve Stage';stageDate=devDate}
-    }
-    else if(c_3DDesign&&!c_QHSE){stage='3 QHSE Stage';stageDate=d3ApprDate}
-    else if(c_QHSE&&!c_TSM_Layout){stage='4 TSM Layout Stage';stageDate=qhseDate}
-    else if(c_TSM_Layout&&!c_TSM){stage='4.5 TSM Stage';stageDate=tsmLayoutDate}
-    else if(c_TSM&&!c_Design){stage='5 Design Stage';stageDate=tsmDate}
-    else if(c_Design&&!c_Finance){
-      // Only show Finance Approval if project exists in Approval sheet
-      if(aRows.length>0){stage='6 Finance Approval';stageDate=designDate}
-      else{stage='5 Design Stage';stageDate=tsmDate}
-    }
-    else if(c_Finance&&!c_Anshuman){stage='7 Anshuman Approval';stageDate=finDate}
-    else if(c_Anshuman&&!c_CX){stage='8 CX Approval';stageDate=anshDate}
-    else if(c_CX&&!c_HOTO2){
-      // Only show HOTO 2 Stage if project exists in HOTO 2 sheet
+    if(c_HOTO2){stage='✓ HOTO 2 Completed';stageDate=h2Date}
+    else if(c_CX){
       if(h2Rows.length>0){stage='9 HOTO 2 Stage';stageDate=cxDate}
       else{stage='8 CX Approval';stageDate=anshDate}
     }
-    else if(c_HOTO2){stage='✓ HOTO 2 Completed';stageDate=h2Date}
-    else{stage='Unknown';stageDate=null}
+    else if(c_Anshuman){stage='8 CX Approval';stageDate=anshDate}
+    else if(c_Finance){stage='7 Anshuman Approval';stageDate=finDate}
+    else if(c_Design){
+      if(aRows.length>0){stage='6 Finance Approval';stageDate=designDate}
+      else{stage='5 Design Stage';stageDate=tsmDate}
+    }
+    else if(c_TSM){stage='5 Design Stage';stageDate=tsmDate}
+    else if(c_TSM_Layout){stage='4.5 TSM Stage';stageDate=tsmLayoutDate}
+    else if(c_QHSE){stage='4 TSM Layout Stage';stageDate=qhseDate}
+    else if(c_3DDesign){stage='3 QHSE Stage';stageDate=d3ApprDate}
+    else if(c_DEV){
+      stage='2.7 3D Design Stage';stageDate=devDate
+    }
+    // DEV Start Time filled + no completed timestamp = in DEV stage (even if not in HOTO 1)
+    else if(c_DEV_Started){stage='2 DEV Stage';stageDate=devScheduledDate}
+    else{stage='1 HOTO 1 Stage';stageDate=h1CompDate}
 
-    const h1Match=h1Rows[0];const city=h1Match?g(h1Match,'City'):'';const cap=h1Match?num(g(h1Match,'Project Size (Capacity)')):0;
-    results.push({name:proj,city,cap,stage,stageDate,days:daysBetween(stageDate),completed:stage.startsWith('✓')});
+    const h1Match=h1Rows[0];const city=h1Match?g(h1Match,'City'):(extraCity[proj]||'');const cap=h1Match?num(g(h1Match,'Project Size (Capacity)')):0;
+
+    // DEV TAT: days from DEV Start Time to DEV Completed Timestamp
+    const devStartDate=maxD(devDoneRows,'DEV Start Time');
+    const devCompletedDate=maxD(devDoneRows,'DEV Completed Timestamp');
+    const devTatDays=(devStartDate&&devCompletedDate)?Math.round((devCompletedDate-devStartDate)/(1000*60*60*24)):null;
+
+    // DEV SLA by capacity bucket (Alpha<30kW=4d, Beta 30-100=5d, Gama 101-200=7d, Omega 201-400=8d)
+    const devSlaDays=cap<30?4:cap<=100?5:cap<=200?7:8;
+
+    results.push({name:proj,city,cap,stage,stageDate,days:daysBetween(stageDate),completed:stage.startsWith('✓'),devTat:devTatDays,devSla:devSlaDays});
   });
   return results;
 }
@@ -2898,7 +2941,7 @@ function renderAging(){
 
 function renderStageBarsHTML(projects){
   const stageGroups={};projects.forEach(p=>{stageGroups[p.stage]=(stageGroups[p.stage]||0)+1});
-  const pipelineOrder=['1 HOTO 1 Stage','2 DEV Stage','2.5 DEV Approve Stage','2.7 3D Design Stage','3 QHSE Stage','4 TSM Layout Stage','4.5 TSM Stage','5 Design Stage','6 Finance Approval','7 Anshuman Approval','8 CX Approval','9 HOTO 2 Stage','✓ HOTO 2 Completed'];
+  const pipelineOrder=['1 HOTO 1 Stage','2 DEV Stage','2.7 3D Design Stage','3 QHSE Stage','4 TSM Layout Stage','4.5 TSM Stage','5 Design Stage','6 Finance Approval','7 Anshuman Approval','8 CX Approval','9 HOTO 2 Stage','✓ HOTO 2 Completed'];
   const stageEntries=[];pipelineOrder.forEach(stg=>{if(stageGroups[stg])stageEntries.push([stg,stageGroups[stg]])});
   Object.keys(stageGroups).forEach(stg=>{if(!pipelineOrder.includes(stg))stageEntries.push([stg,stageGroups[stg]])});
   const stMax=Math.max(...stageEntries.map(s=>s[1]),1);
@@ -2927,8 +2970,20 @@ function buildAndRenderAgingTable(){
   const srch=(document.getElementById('agingSearchInput')||{}).value||'';
   if(srch.trim())data=data.filter(p=>(p.name||'').toLowerCase().includes(srch.trim().toLowerCase()));
   data.sort((a,b)=>{let va=a[currentSortKey],vb=b[currentSortKey];if(va==null)return currentSortAsc?1:-1;if(vb==null)return currentSortAsc?-1:1;if(typeof va==='string')return currentSortAsc?va.localeCompare(vb):vb.localeCompare(va);return currentSortAsc?va-vb:vb-va});
-  ['name','city','stage','stageDate','days','cap'].forEach(col=>{const ind=document.getElementById('sort_'+col);if(ind){if(currentSortKey===col){ind.textContent=currentSortAsc?' ▲':' ▼';ind.style.color='var(--ac)'}else ind.textContent=''}});
-  tb.innerHTML=data.map(p=>{const c=stageColorMap[p.stage]||'var(--tx)';const safe=p.name.replace(/'/g,"\\'");return `<tr style="cursor:pointer" onclick="openAgingModal('${safe}')"><td style="font-weight:500;color:var(--brand-cyan)">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${c}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td><td>${p.cap||'—'}</td></tr>`}).join('');
+  ['name','city','stage','stageDate','days','devTat','cap'].forEach(col=>{const ind=document.getElementById('sort_'+col);if(ind){if(currentSortKey===col){ind.textContent=currentSortAsc?' ▲':' ▼';ind.style.color='var(--ac)'}else ind.textContent=''}});
+  tb.innerHTML=data.map(p=>{
+    const c=stageColorMap[p.stage]||'var(--tx)';
+    const safe=p.name.replace(/"/g,'&quot;');
+    // DEV TAT cell — green if within SLA, red if over
+    let devTatCell='<td style="text-align:center;color:var(--tm)">—</td>';
+    if(p.devTat!=null){
+      const ok=p.devTat<=p.devSla;
+      const bg=ok?'var(--gnd)':'var(--rdd,rgba(239,68,68,.15))';
+      const col2=ok?'var(--gn)':'var(--rd)';
+      devTatCell=`<td style="text-align:center"><span style="padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700;background:${bg};color:${col2}">${p.devTat}d <span style="font-weight:400;font-size:9px">(SLA ${p.devSla}d)</span></span></td>`;
+    }
+    return `<tr style="cursor:pointer" onclick="openAgingModal(this.dataset.proj)" data-proj="${safe}"><td style="font-weight:500;color:var(--brand-cyan)">${p.name}</td><td>${p.city||'—'}</td><td><span style="font-size:10px;font-weight:600;color:${c}">${p.stage}</span></td><td style="font-size:10px;color:var(--tm)">${p.stageDate?p.stageDate.toLocaleDateString():'—'}</td><td>${agingBadge(p.days,p.completed)}</td>${devTatCell}<td>${p.cap||'—'}</td></tr>`;
+  }).join('');
 }
 
 function agingBadge(days,completed){
@@ -2993,8 +3048,7 @@ function openAgingModal(projectName){
   const stages = [
     { label:'HOTO 1',              start:h1StartDate,   startLbl:'Approval Email Sent', end:h1DoneDate,    endLbl:'HOTO 1 Completed',        color:'var(--ac)' },
     { label:'DEV Complete',        start:h1DoneDate,    startLbl:'HOTO 1 Completed',    end:devAssigned,   endLbl:'DEV Assigned Timestamp',   color:'var(--bl)' },
-    { label:'DEV Approved',        start:devAssigned,   startLbl:'DEV Assigned',        end:auditDone,     endLbl:'Audit Completed On',       color:'var(--pr)' },
-    { label:'3D Design',           start:d3StartDate,   startLbl:'3D Design Start',     end:d3ApprDate,    endLbl:'3D Approved On',           color:'var(--gn)' },
+    { label:'3D Design',           start:devAssigned,   startLbl:'DEV Completed',       end:d3ApprDate,    endLbl:'3D Approved On',           color:'var(--gn)' },
     { label:'QHSE',                start:d3ApprDate,    startLbl:'3D Approved On',      end:qhseDate,      endLbl:'QHSE Completed Date',      color:'var(--cy)' },
     { label:'TSM Layout',          start:qhseDate,      startLbl:'QHSE Completed',      end:tsmLayoutDate, endLbl:'TSM Approved On (Layout)', color:'var(--pk)' },
     { label:'TSM Verified',        start:tsmLayoutDate, startLbl:'TSM Layout Approved', end:tsmVerDate,    endLbl:'TSM Completed Date',       color:'var(--ac)' },
