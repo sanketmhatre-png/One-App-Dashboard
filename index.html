@@ -808,8 +808,8 @@ const stageColorMap = {
 function T(n){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));const pn=document.getElementById('t'+n);if(pn)pn.classList.add('on');const tb=document.querySelector(`.tab[onclick="T(${n})"]`);if(tb)tb.classList.add('on')}
 
 function fetchSheet(name){
-  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
-  return fetch(url).then(r=>{if(!r.ok)throw new Error(r.status);return r.text()}).then(csv=>{const p=Papa.parse(csv,{header:true,skipEmptyLines:true});return{name,data:p.data,fields:p.meta.fields}});
+  const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}&_=${Date.now()}`;
+  return fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(r.status);return r.text()}).then(csv=>{const p=Papa.parse(csv,{header:true,skipEmptyLines:true});return{name,data:p.data,fields:p.meta.fields}});
 }
 
 function fetchAll(){
